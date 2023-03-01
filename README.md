@@ -1,2 +1,2 @@
-# argparsecfg
-python argparse wrapper
+# ArgParseCfg
+Cfg for python argparse.
