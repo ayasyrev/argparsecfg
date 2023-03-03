@@ -44,6 +44,10 @@ def test_create_parser_default():
     parser = create_parser(parser_cfg=parser_cfg)
     assert compare_parsers(parser_base, parser)
     assert compare_parsers_actions(parser_base, parser)
+    # create parser w/o args
+    parser = create_parser()
+    assert compare_parsers(parser_base, parser)
+    assert compare_parsers_actions(parser_base, parser)
 
 
 def test_create_parser():

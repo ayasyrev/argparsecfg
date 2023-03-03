@@ -21,7 +21,9 @@ class ParserCfg:
     exit_on_error: bool = True
 
 
-def create_parser(parser_cfg: ParserCfg):
-    """Create parser"""
+def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentParser:
+    """Create argparse parser."""
+    if parser_cfg is None:
+        parser_cfg = ParserCfg()
     parser = argparse.ArgumentParser(**asdict(parser_cfg))
     return parser
