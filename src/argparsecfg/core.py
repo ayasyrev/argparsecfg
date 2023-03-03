@@ -25,5 +25,6 @@ def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentPa
     """Create argparse parser."""
     if parser_cfg is None:
         parser_cfg = ParserCfg()
+    # check if subclass -> filter args
     parser = argparse.ArgumentParser(**asdict(parser_cfg))
     return parser
