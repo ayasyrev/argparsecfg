@@ -24,9 +24,7 @@ def test_create_parser():
     description = "Dummy prog."
     epilog = "nothing done..."
     parser_base = argparse.ArgumentParser(
-        prog=prog_name,
-        description=description,
-        epilog=epilog
+        prog=prog_name, description=description, epilog=epilog
     )
     parser_cfg = ParserCfg(
         prog=prog_name,

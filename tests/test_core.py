@@ -29,7 +29,8 @@ def compare_parsers_actions(
             return False
         if not all(
             val == act_2.__dict__.get(key)
-            for key, val in act_1.__dict__.items() if key != "container"
+            for key, val in act_1.__dict__.items()
+            if key != "container"
         ):
             return False
     return True

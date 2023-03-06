@@ -38,6 +38,7 @@ def get_field_type(dc_field: Field) -> type:
 
 
 def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
+    """add argument to parser from dataclass field"""
     long_flag = f"{parser.prefix_chars * 2}{dc_field.name}"
     kwargs = {}
     kwargs["type"] = get_field_type(dc_field)
@@ -47,8 +48,20 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
 
 
 def add_args_from_dc(parser: argparse.ArgumentParser, dc: type) -> None:
+    """add arguments tu parser from dataclass fields"""
     if dataclasses.is_dataclass(dc):
         for dc_field in dc.__dataclass_fields__.values():
             add_arg(parser, dc_field)
     else:
         print(f"Warning: {dc} not dataclass type")  # ? warning ?
+
+
+def create_dc_obj(dc: type, args: argparse.Namespace) -> object:
+    """create dataclass instance from argparse cfg"""
+    if not dataclasses.is_dataclass(dc):
+        print("Err {dc} not dataclass type")
+        return None  # ? raise error ?
+    kwargs = {
+        key: val for key, val in args.__dict__.items() if key in dc.__dataclass_fields__
+    }
+    return dc(**kwargs)
