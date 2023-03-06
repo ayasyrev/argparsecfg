@@ -46,6 +46,9 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
     parser.add_argument(long_flag, **kwargs)
 
 
-def add_args_from_dc(parser: argparse.ArgumentParser, dc: dataclass) -> None:
-    for dc_field in dc.__dataclass_fields__.values():
-        add_arg(parser, dc_field)
+def add_args_from_dc(parser: argparse.ArgumentParser, dc: type) -> None:
+    if dataclasses.is_dataclass(dc):
+        for dc_field in dc.__dataclass_fields__.values():
+            add_arg(parser, dc_field)
+    else:
+        print(f"Warning: {dc} not dataclass type")  # ? warning ?
