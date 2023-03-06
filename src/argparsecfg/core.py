@@ -8,6 +8,7 @@ from typing import Optional
 @dataclass
 class ParserCfg:
     """Config schema for argparse parser"""
+
     prog: Optional[str] = None
     usage: Optional[str] = None
     description: Optional[str] = None
