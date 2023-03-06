@@ -2,7 +2,7 @@ import argparse
 
 from argparsecfg.core import ParserCfg, create_parser
 
-from .test_core import compare_parsers, compare_parsers_actions
+from .test_tools import parsers_args_equal, parsers_actions_equal
 
 
 def test_create_parser_default():
@@ -10,12 +10,12 @@ def test_create_parser_default():
     parser_base = argparse.ArgumentParser()
     parser_cfg = ParserCfg()
     parser = create_parser(parser_cfg=parser_cfg)
-    assert compare_parsers(parser_base, parser)
-    assert compare_parsers_actions(parser_base, parser)
+    assert parsers_args_equal(parser_base, parser)
+    assert parsers_actions_equal(parser_base, parser)
     # create parser w/o args
     parser = create_parser()
-    assert compare_parsers(parser_base, parser)
-    assert compare_parsers_actions(parser_base, parser)
+    assert parsers_args_equal(parser_base, parser)
+    assert parsers_actions_equal(parser_base, parser)
 
 
 def test_create_parser():
@@ -32,5 +32,5 @@ def test_create_parser():
         epilog=epilog,
     )
     parser = create_parser(parser_cfg=parser_cfg)
-    assert compare_parsers(parser_base, parser)
-    assert compare_parsers_actions(parser_base, parser)
+    assert parsers_args_equal(parser_base, parser)
+    assert parsers_actions_equal(parser_base, parser)

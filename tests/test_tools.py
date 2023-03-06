@@ -1,7 +1,7 @@
 import argparse
 
 
-def compare_parsers(
+def parsers_args_equal(
     parser_1: argparse.ArgumentParser,
     parser_2: argparse.ArgumentParser,
 ) -> bool:
@@ -13,7 +13,7 @@ def compare_parsers(
     return True
 
 
-def compare_parsers_actions(
+def parsers_actions_equal(
     parser_1: argparse.ArgumentParser,
     parser_2: argparse.ArgumentParser,
 ) -> bool:
@@ -24,9 +24,6 @@ def compare_parsers_actions(
         return False
     # check order of elements
     for act_1, act_2 in zip(actions_1, actions_2):
-        # pass
-        if act_1.__dict__.keys() != act_2.__dict__.keys():  # is it possible?
-            return False
         if not all(
             val == act_2.__dict__.get(key)
             for key, val in act_1.__dict__.items()
@@ -34,3 +31,30 @@ def compare_parsers_actions(
         ):
             return False
     return True
+
+
+def test_args_equal():
+    """test parsers_args_equal"""
+    parser_1 = argparse.ArgumentParser()
+    parser_2 = argparse.ArgumentParser()
+    assert parsers_args_equal(parser_1, parser_2)
+    parser_2 = argparse.ArgumentParser(prog="test_name")
+    assert not parsers_args_equal(parser_1, parser_2)
+
+
+def test_parsers_actions_equal():
+    """test parsers_actions_equal"""
+    parser_1 = argparse.ArgumentParser()
+    parser_2 = argparse.ArgumentParser()
+    # initial - only help action
+    assert parsers_actions_equal(parser_1, parser_2)
+    # different len
+    parser_1.add_argument("arg1")
+    assert not parsers_actions_equal(parser_1, parser_2)
+    # again the same
+    parser_2.add_argument("arg1")
+    assert parsers_actions_equal(parser_1, parser_2)
+    # different args
+    parser_1.add_argument("arg2")
+    parser_2.add_argument("arg3")
+    assert not parsers_actions_equal(parser_1, parser_2)

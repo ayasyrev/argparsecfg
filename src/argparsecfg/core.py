@@ -7,6 +7,7 @@ from typing import Optional
 
 @dataclass
 class ParserCfg:
+    """Config schema for argparse parser"""
     prog: Optional[str] = None
     usage: Optional[str] = None
     description: Optional[str] = None
@@ -53,13 +54,13 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: type) -> None:
         for dc_field in dc.__dataclass_fields__.values():
             add_arg(parser, dc_field)
     else:
-        print(f"Warning: {dc} not dataclass type")  # ? warning ?
+        print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
 def create_dc_obj(dc: type, args: argparse.Namespace) -> object:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
-        print("Err {dc} not dataclass type")
+        print(f"Error: {type(dc)} not dataclass type")
         return None  # ? raise error ?
     kwargs = {
         key: val for key, val in args.__dict__.items() if key in dc.__dataclass_fields__

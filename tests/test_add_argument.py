@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from argparsecfg.core import ParserCfg, add_args_from_dc, create_dc_obj, create_parser
 
-from .test_core import compare_parsers, compare_parsers_actions
+from .test_tools import parsers_args_equal, parsers_actions_equal
 
 
 @dataclass
@@ -13,7 +13,7 @@ class SimpleArg:
     arg_str: str = ""
 
 
-def test_add_args_simple():
+def test_add_args_simple(capsys):
     """test basic args"""
     parser_base = argparse.ArgumentParser()
     parser_base.add_argument("--arg_int", type=int)
@@ -24,11 +24,16 @@ def test_add_args_simple():
     parser = create_parser(parser_cfg=parser_cfg)
     add_args_from_dc(parser, SimpleArg)
 
-    assert compare_parsers(parser_base, parser)
-    assert compare_parsers_actions(parser_base, parser)
+    assert parsers_args_equal(parser_base, parser)
+    assert parsers_actions_equal(parser_base, parser)
+
+    # wrong arg
+    add_args_from_dc(parser, 10)
+    captured = capsys.readouterr()
+    assert captured.out == "Warning: <class 'int'> not dataclass type\n"
 
 
-def test_parser():
+def test_parser(capsys):
     """basic parser test create dataclass instance."""
     parser = create_parser()
     add_args_from_dc(parser, SimpleArg)
@@ -36,3 +41,8 @@ def test_parser():
     dc_obj_parsed = create_dc_obj(SimpleArg, args)
     dc_obj_default = SimpleArg(arg_int=10)
     assert dc_obj_parsed == dc_obj_default
+
+    # wrong arg
+    dc_obj_parsed = create_dc_obj(10, args)
+    captured = capsys.readouterr()
+    assert captured.out == "Error: <class 'int'> not dataclass type\n"
