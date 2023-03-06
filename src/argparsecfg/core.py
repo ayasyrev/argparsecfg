@@ -1,8 +1,9 @@
 import argparse
-from argparse import HelpFormatter
 import dataclasses
-from dataclasses import Field, dataclass, field, asdict
-from typing import Optional
+import sys
+from argparse import HelpFormatter
+from dataclasses import Field, asdict, dataclass, field
+from typing import List, Optional, Type
 
 
 @dataclass
@@ -13,8 +14,8 @@ class ParserCfg:
     usage: Optional[str] = None
     description: Optional[str] = None
     epilog: Optional[str] = None
-    parents: list[str] = field(default_factory=list)
-    formatter_class: type = HelpFormatter
+    parents: List[str] = field(default_factory=list)
+    formatter_class: Type = HelpFormatter
     prefix_chars: str = "-"
     fromfile_prefix_chars: Optional[bool] = None
     argument_default: Optional[str] = None
@@ -29,7 +30,10 @@ def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentPa
     if parser_cfg is None:
         parser_cfg = ParserCfg()
     # check if subclass -> filter args
-    parser = argparse.ArgumentParser(**asdict(parser_cfg))
+    kwargs = asdict(parser_cfg)
+    if sys.version_info.minor < 9:
+        kwargs.pop("exit_on_error")  # from python 3.9
+    parser = argparse.ArgumentParser(**kwargs)
     return parser
 
 
@@ -58,7 +62,7 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: type) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
-def create_dc_obj(dc: type, args: argparse.Namespace) -> object:
+def create_dc_obj(dc: Type, args: argparse.Namespace) -> object:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
         print(f"Error: {type(dc)} not dataclass type")
