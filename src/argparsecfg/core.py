@@ -37,13 +37,13 @@ def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentPa
     return parser
 
 
-def get_field_type(dc_field: Field) -> type:
+def get_field_type(dc_field: Field[Any]) -> type:
     """Return field type"""
     # temp simplified
     return dc_field.type
 
 
-def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
+def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     """add argument to parser from dataclass field"""
     long_flag = f"{parser.prefix_chars * 2}{dc_field.name}"
     kwargs: dict[str, Any] = {}
