@@ -3,7 +3,7 @@ import dataclasses
 import sys
 from argparse import HelpFormatter
 from dataclasses import Field, asdict, dataclass, field
-from typing import List, Optional, Type
+from typing import Any, List, Optional, Type
 
 
 @dataclass
@@ -15,7 +15,7 @@ class ParserCfg:
     description: Optional[str] = None
     epilog: Optional[str] = None
     parents: List[str] = field(default_factory=list)
-    formatter_class: Type = HelpFormatter
+    formatter_class: Type[HelpFormatter] = HelpFormatter
     prefix_chars: str = "-"
     fromfile_prefix_chars: Optional[bool] = None
     argument_default: Optional[str] = None
@@ -31,8 +31,8 @@ def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentPa
         parser_cfg = ParserCfg()
     # check if subclass -> filter args
     kwargs = asdict(parser_cfg)
-    if sys.version_info.minor < 9:
-        kwargs.pop("exit_on_error")  # from python 3.9
+    if sys.version_info.minor < 9:  # from python 3.9
+        kwargs.pop("exit_on_error")  # pragma: no cover
     parser = argparse.ArgumentParser(**kwargs)
     return parser
 
@@ -46,9 +46,11 @@ def get_field_type(dc_field: Field) -> type:
 def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
     """add argument to parser from dataclass field"""
     long_flag = f"{parser.prefix_chars * 2}{dc_field.name}"
-    kwargs = {}
+    kwargs: dict[str, Any] = {}
     kwargs["type"] = get_field_type(dc_field)
-    if not isinstance(dc_field.default, dataclasses._MISSING_TYPE):
+    if isinstance(dc_field.default, dataclasses._MISSING_TYPE):
+        kwargs["required"] = True
+    else:
         kwargs["default"] = dc_field.default
     parser.add_argument(long_flag, **kwargs)
 
