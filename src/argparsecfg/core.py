@@ -48,7 +48,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     long_flag = f"{parser.prefix_chars * 2}{dc_field.name}"
     kwargs: dict[str, Any] = {}
     kwargs["type"] = get_field_type(dc_field)
-    if isinstance(dc_field.default, dataclasses._MISSING_TYPE):
+    if isinstance(dc_field.default, dataclasses._MISSING_TYPE):  # pylint: disable=protected-access
         kwargs["required"] = True
     else:
         kwargs["default"] = dc_field.default
@@ -64,7 +64,7 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: type) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
-def create_dc_obj(dc: Type, args: argparse.Namespace) -> object:
+def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> object:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
         print(f"Error: {type(dc)} not dataclass type")

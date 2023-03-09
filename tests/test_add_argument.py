@@ -13,7 +13,7 @@ class SimpleArg:
     arg_str: str = ""
 
 
-def test_add_args_simple(capsys):
+def test_add_args_simple(capsys):  # type: ignore
     """test basic args"""
     # base parser
     parser_base = argparse.ArgumentParser()
@@ -31,12 +31,12 @@ def test_add_args_simple(capsys):
     assert parsers_actions_equal(parser_base, parser)
 
     # wrong arg
-    add_args_from_dc(parser, 10)
-    captured = capsys.readouterr()
-    assert captured.out == "Warning: <class 'int'> not dataclass type\n"
+    add_args_from_dc(parser, 10)  # type: ignore
+    captured = capsys.readouterr()  # type: ignore
+    assert captured.out == "Warning: <class 'int'> not dataclass type\n"  # type: ignore
 
 
-def test_parser(capsys):
+def test_parser(capsys):  # type: ignore
     """basic parser test create dataclass instance."""
     # create parser, add args
     parser = create_parser()
@@ -50,6 +50,6 @@ def test_parser(capsys):
     assert dc_obj_parsed == dc_obj_default
 
     # wrong arg
-    dc_obj_parsed = create_dc_obj(10, args)
-    captured = capsys.readouterr()
-    assert captured.out == "Error: <class 'int'> not dataclass type\n"
+    dc_obj_parsed = create_dc_obj(10, args)  # type: ignore
+    captured = capsys.readouterr()  # type: ignore
+    assert captured.out == "Error: <class 'int'> not dataclass type\n"  # type: ignore
