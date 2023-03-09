@@ -1,9 +1,12 @@
 import argparse
 from dataclasses import dataclass
 
-from argparsecfg.core import ParserCfg, add_args_from_dc, create_dc_obj, create_parser
+from _pytest.capture import CaptureFixture
 
-from .test_tools import parsers_args_equal, parsers_actions_equal
+from argparsecfg.core import (ParserCfg, add_args_from_dc, create_dc_obj,
+                              create_parser)
+
+from .test_tools import parsers_actions_equal, parsers_args_equal
 
 
 @dataclass
@@ -13,7 +16,7 @@ class SimpleArg:
     arg_str: str = ""
 
 
-def test_add_args_simple(capsys):  # type: ignore
+def test_add_args_simple(capsys: CaptureFixture[str]):
     """test basic args"""
     # base parser
     parser_base = argparse.ArgumentParser()
@@ -29,14 +32,15 @@ def test_add_args_simple(capsys):  # type: ignore
     add_args_from_dc(parser, SimpleArg)
     assert parsers_args_equal(parser_base, parser)
     assert parsers_actions_equal(parser_base, parser)
+    assert parser_base.format_help() == parser.format_help()
 
     # wrong arg
     add_args_from_dc(parser, 10)  # type: ignore
-    captured = capsys.readouterr()  # type: ignore
-    assert captured.out == "Warning: <class 'int'> not dataclass type\n"  # type: ignore
+    captured = capsys.readouterr()
+    assert captured.out == "Warning: <class 'int'> not dataclass type\n"
 
 
-def test_parser(capsys):  # type: ignore
+def test_parser(capsys: CaptureFixture[str]):
     """basic parser test create dataclass instance."""
     # create parser, add args
     parser = create_parser()
@@ -51,5 +55,5 @@ def test_parser(capsys):  # type: ignore
 
     # wrong arg
     dc_obj_parsed = create_dc_obj(10, args)  # type: ignore
-    captured = capsys.readouterr()  # type: ignore
-    assert captured.out == "Error: <class 'int'> not dataclass type\n"  # type: ignore
+    captured = capsys.readouterr()
+    assert captured.out == "Error: <class 'int'> not dataclass type\n"
