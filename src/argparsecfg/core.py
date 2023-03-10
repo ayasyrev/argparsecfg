@@ -74,7 +74,8 @@ ArgEnum = Enum(
 
 
 def arg_metadata(
-    flag: Optional[str] = None,
+    flag: Optional[str] = None,  # simple ver, check if "name", list of flags
+    *,
     action: Optional[str] = None,  # _ActionStr | Type[Action] = ...,
     nargs: Optional[int] = None,  # | _NArgsStr | _SUPPRESS_T = ...,
     const: Optional[str] = None,  # Any = ...,
@@ -141,7 +142,9 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
     else:
         default = dc_field.default
 
-    if dc_field.metadata:  # check only if metadata
+    if dc_field.metadata and metadata_default:  # check only if metadata
+        if type(default) != type(metadata_default):
+            print(f"Warning: {type(default)=}, {type(metadata_default)=}")
         if default != metadata_default:
             print(f"Warning: {default=}, {metadata_default=}")
 
