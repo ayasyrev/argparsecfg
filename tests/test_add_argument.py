@@ -106,9 +106,8 @@ def test_type_def(capsys: CaptureFixture[str]):
     captured = capsys.readouterr()
     out = captured.out
     assert "arg arg_1 type is <class 'int'> but at metadata <class 'float'>" in out
-    assert "type(default)=<class 'int'>, type(metadata_default)=<class 'float'>" in out
+    assert "default_type=<class 'int'>, metadata_default_type=<class 'float'>" in out
     assert "default=1, metadata_default=2.0" in out
-    assert "type(default)=<class 'int'>, type(metadata_default)=<class 'float'>" in out
 
     args = parser.parse_args([])
     # create obj from parsed args

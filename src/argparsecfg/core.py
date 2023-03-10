@@ -4,8 +4,8 @@ import sys
 from argparse import HelpFormatter
 from dataclasses import Field, asdict, dataclass, field
 from enum import Enum
-from types import MappingProxyType
-from typing import Any, Iterable, List, Optional, Tuple, Type, Union
+# from types import MappingProxyType
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 
 @dataclass
@@ -90,7 +90,7 @@ def arg_metadata(
     metavar: Union[str, Tuple[str, ...], None] = None,  # |  = ...,
     dest: Optional[str] = None,
     version: Optional[str] = None,  # not implemented
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     """create dict with args for argparse.add_argument"""
     return asdict(ArgCfg(
         flag=flag,
@@ -108,7 +108,9 @@ def arg_metadata(
     ))
 
 
-def parse_metadata(metadata: MappingProxyType[str, Any]) -> dict[str, Any]:
+def parse_metadata(
+        metadata  #: MappingProxyType[str, Any],
+) -> Dict[str, Any]:
     return {key: val for key, val in metadata.items() if key in ArgEnum.__members__}
 
 
@@ -144,9 +146,11 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
 
     if dc_field.metadata and metadata_default:  # check only if metadata
         if type(default) != type(metadata_default):
-            print(f"Warning: {type(default)=}, {type(metadata_default)=}")
+            default_type = type(default)
+            metadata_default_type = type(metadata_default)
+            print(f"Warning: default_type={default_type}, metadata_default_type={metadata_default_type}")
         if default != metadata_default:
-            print(f"Warning: {default=}, {metadata_default=}")
+            print(f"Warning: default={default}, metadata_default={metadata_default}")
 
     if default is None:
         kwargs["required"] = True
