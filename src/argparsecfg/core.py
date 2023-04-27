@@ -3,8 +3,7 @@ import dataclasses
 import sys
 from argparse import HelpFormatter
 from dataclasses import Field, asdict, dataclass, field
-from enum import Enum
-# from types import MappingProxyType
+from types import MappingProxyType
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 
@@ -39,7 +38,7 @@ def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentPa
     return parser
 
 
-def get_field_type(dc_field: Field) -> Type[Any]:
+def get_field_type(dc_field: Field[Any]) -> Type[Any]:
     """Return field type"""
     # temp simplified
     return dc_field.type
@@ -64,13 +63,6 @@ class ArgCfg:
     metavar: Union[str, Tuple[str, ...], None]  # | tuple[str, ...] | None = ...,
     dest: Optional[str]  # | None = ...,
     # version: Optional[str]  # = ...,
-
-
-ArgEnum = Enum(
-    "ArgEnum",
-    {field.name: field.name for field in ArgCfg.__dataclass_fields__.values()},
-    type=str,
-)
 
 
 def arg_metadata(
@@ -109,12 +101,16 @@ def arg_metadata(
 
 
 def parse_metadata(
-        metadata  #: MappingProxyType[str, Any],
+        metadata: MappingProxyType[str, Any],
 ) -> Dict[str, Any]:
-    return {key: val for key, val in metadata.items() if key in ArgEnum.__members__}
+    return {
+        key: val
+        for key, val in metadata.items()
+        if key in ArgCfg.__dataclass_fields__  # pylint: disable=no-member
+    }
 
 
-def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
+def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     """add argument to parser from dataclass field"""
     flags = [f"{parser.prefix_chars * 2}{dc_field.name}"]
     if dc_field.metadata:
@@ -138,14 +134,14 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field) -> None:
             # ? assert
             print(f"Warning: arg {dc_field.name} type is {kwargs['type']} but at metadata {metadata_type}")
     if isinstance(
-        dc_field.default, dataclasses._MISSING_TYPE
-    ):  # pylint: disable=protected-access
+        dc_field.default, dataclasses._MISSING_TYPE  # pylint: disable=protected-access
+    ):
         default = None
     else:
         default = dc_field.default
 
     if dc_field.metadata and metadata_default:  # check only if metadata
-        if type(default) != type(metadata_default):
+        if not isinstance(default, type(metadata_default)):
             default_type = type(default)
             metadata_default_type = type(metadata_default)
             print(f"Warning: default_type={default_type}, metadata_default_type={metadata_default_type}")

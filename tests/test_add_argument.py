@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from _pytest.capture import CaptureFixture
 
 from argparsecfg.core import (ParserCfg, add_args_from_dc, create_dc_obj,
-                              create_parser, ArgEnum, arg_metadata)
+                              create_parser, arg_metadata)
 
 from .test_tools import parsers_actions_equal, parsers_args_equal
 
@@ -14,7 +14,7 @@ class ArgHelp:
     arg_int: int = field(metadata={"help": "simple help"})
     arg_float: float = field(
         default=0.0,
-        metadata={ArgEnum.help: "simple help"},
+        metadata={"help": "simple help"},
     )
     arg_str: str = field(
         default="",
