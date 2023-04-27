@@ -1,6 +1,6 @@
 import argparse
 
-from argparsecfg.core import ParserCfg, create_parser
+from argparsecfg.core import ArgumentParserCfg, create_parser
 
 from .test_tools import parsers_args_equal, parsers_actions_equal
 
@@ -8,7 +8,7 @@ from .test_tools import parsers_args_equal, parsers_actions_equal
 def test_create_parser_default():
     """test creation basic parser w/ default args"""
     parser_base = argparse.ArgumentParser()
-    parser_cfg = ParserCfg()
+    parser_cfg = ArgumentParserCfg()
     parser = create_parser(parser_cfg=parser_cfg)
     assert parsers_args_equal(parser_base, parser)
     assert parsers_actions_equal(parser_base, parser)
@@ -26,7 +26,7 @@ def test_create_parser():
     parser_base = argparse.ArgumentParser(
         prog=prog_name, description=description, epilog=epilog
     )
-    parser_cfg = ParserCfg(
+    parser_cfg = ArgumentParserCfg(
         prog=prog_name,
         description=description,
         epilog=epilog,

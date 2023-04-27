@@ -10,8 +10,10 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 
 @dataclass
-class ParserCfg:
-    """Config schema for argparse parser"""
+class ArgumentParserCfg:
+    """Config schema for argparse parser.
+    Parameters same as at argparse.ArgumentParser.
+    """
 
     prog: Optional[str] = None
     usage: Optional[str] = None
@@ -28,10 +30,10 @@ class ParserCfg:
     exit_on_error: bool = True
 
 
-def create_parser(parser_cfg: Optional[ParserCfg] = None) -> argparse.ArgumentParser:
+def create_parser(parser_cfg: Optional[ArgumentParserCfg] = None) -> argparse.ArgumentParser:
     """Create argparse parser."""
     if parser_cfg is None:
-        parser_cfg = ParserCfg()
+        parser_cfg = ArgumentParserCfg()
     # check if subclass -> filter args
     kwargs = asdict(parser_cfg)
     if sys.version_info.minor < 9:  # from python 3.9

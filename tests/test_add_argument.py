@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 from _pytest.capture import CaptureFixture
 
-from argparsecfg.core import (ParserCfg, add_args_from_dc, create_dc_obj,
+from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc, create_dc_obj,
                               create_parser, arg_metadata)
 
 from .test_tools import parsers_actions_equal, parsers_args_equal
@@ -31,7 +31,7 @@ def test_add_args_help():
     parser_base.add_argument("--arg_str", type=str, default="", help="simple help")
 
     # parser from cfg
-    parser_cfg = ParserCfg()
+    parser_cfg = ArgumentParserCfg()
     parser = create_parser(parser_cfg=parser_cfg)
 
     # add arguments - ArgHelp
