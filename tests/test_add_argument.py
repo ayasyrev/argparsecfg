@@ -86,7 +86,7 @@ def test_add_flag():
 
 @dataclass
 class ArgTypeDef:
-    arg_1: int = field(default=1, metadata=arg_metadata(type=float))
+    arg_1: int = field(default=1, metadata=arg_metadata(type=float))  # type: ignore  - for check error
     arg_2: int = field(default=1, metadata=arg_metadata(default=2.))
     arg_3: int = field(default=1, metadata=arg_metadata(default=1.))
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import dataclasses
 import sys
@@ -56,7 +58,9 @@ class ArgCfg:
     nargs: Optional[int]  # | _NArgsStr | _SUPPRESS_T = ...,
     const: Optional[str]  # Any = ...,
     default: Optional[str]  # Any = ...,
-    type: Union[str, argparse.FileType, None]  # ((str) -> _T@add_argument) | FileType = ...,
+    type: Union[
+        str, argparse.FileType, None
+    ]  # ((str) -> _T@add_argument) | FileType = ...,
     choices: Optional[Iterable[Any]]  # Iterable[_T@add_argument] | None = ...,
     required: bool  # = ...,
     help: Optional[str]  # | None  = ...,
@@ -74,7 +78,9 @@ def arg_metadata(
     # default set at dataclass field, check type!
     default: Optional[Any] = None,  # Any = ...,
     # ! set type at dataclass field! check! ((str) -> _T@add_argument) | FileType = ...,
-    type: Union[str, argparse.FileType, None] = None,  # pylint: disable=redefined-builtin
+    type: Union[
+        str, argparse.FileType, None
+    ] = None,  # pylint: disable=redefined-builtin
     # check choices type! Iterable[_T@add_argument] | None = ...,
     choices: Optional[Iterable[Any]] = None,
     required: bool = False,  # = ...,
@@ -84,24 +90,26 @@ def arg_metadata(
     version: Optional[str] = None,  # not implemented
 ) -> Dict[str, Any]:
     """create dict with args for argparse.add_argument"""
-    return asdict(ArgCfg(
-        flag=flag,
-        action=action,
-        nargs=nargs,
-        const=const,
-        default=default,
-        type=type,
-        choices=choices,
-        required=required,
-        help=help,
-        metavar=metavar,
-        dest=dest,
-        # version=version,
-    ))
+    return asdict(
+        ArgCfg(
+            flag=flag,
+            action=action,
+            nargs=nargs,
+            const=const,
+            default=default,
+            type=type,
+            choices=choices,
+            required=required,
+            help=help,
+            metavar=metavar,
+            dest=dest,
+            # version=version,
+        )
+    )
 
 
 def parse_metadata(
-        metadata: MappingProxyType[str, Any],
+    metadata: MappingProxyType[str, Any],
 ) -> Dict[str, Any]:
     return {
         key: val
@@ -132,7 +140,9 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     if metadata_type is not None:
         if kwargs["type"] != metadata_type:
             # ? assert
-            print(f"Warning: arg {dc_field.name} type is {kwargs['type']} but at metadata {metadata_type}")
+            print(
+                f"Warning: arg {dc_field.name} type is {kwargs['type']} but at metadata {metadata_type}"
+            )
     if isinstance(
         dc_field.default, dataclasses._MISSING_TYPE  # pylint: disable=protected-access
     ):
@@ -144,7 +154,9 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
         if not isinstance(default, type(metadata_default)):
             default_type = type(default)
             metadata_default_type = type(metadata_default)
-            print(f"Warning: default_type={default_type}, metadata_default_type={metadata_default_type}")
+            print(
+                f"Warning: default_type={default_type}, metadata_default_type={metadata_default_type}"
+            )
         if default != metadata_default:
             print(f"Warning: default={default}, metadata_default={metadata_default}")
 
