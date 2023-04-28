@@ -74,7 +74,7 @@ class ArgCfg:
     # version: Optional[str]  # = ...,
 
 
-def arg_metadata(
+def add_argument_metadata(
     flag: Optional[str] = None,  # simple ver, check if "name", list of flags
     *,
     action: Optional[str] = None,  # _ActionStr | Type[Action] = ...,

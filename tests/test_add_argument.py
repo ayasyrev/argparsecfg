@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from _pytest.capture import CaptureFixture
 
 from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc, create_dc_obj,
-                              create_parser, arg_metadata)
+                              create_parser, add_argument_metadata)
 
 from .test_tools import parsers_actions_equal, parsers_args_equal
 
@@ -18,7 +18,7 @@ class ArgHelp:
     )
     arg_str: str = field(
         default="",
-        metadata=arg_metadata(help="simple help"),
+        metadata=add_argument_metadata(help="simple help"),
     )
 
 
@@ -57,8 +57,8 @@ def test_parser():
 
 @dataclass
 class ArgFlag:
-    arg_1: int = field(default=1, metadata=arg_metadata("-a"))
-    arg_2: int = field(default=1, metadata=arg_metadata("b"))
+    arg_1: int = field(default=1, metadata=add_argument_metadata("-a"))
+    arg_2: int = field(default=1, metadata=add_argument_metadata("b"))
     arg_3: int = field(default=1, metadata={"flag": "-c"})
     arg_4: int = field(default=1, metadata={"flag": "d"})
 
@@ -86,9 +86,9 @@ def test_add_flag():
 
 @dataclass
 class ArgTypeDef:
-    arg_1: int = field(default=1, metadata=arg_metadata(type=float))  # type: ignore  - for check error
-    arg_2: int = field(default=1, metadata=arg_metadata(default=2.))
-    arg_3: int = field(default=1, metadata=arg_metadata(default=1.))
+    arg_1: int = field(default=1, metadata=add_argument_metadata(type=float))  # type: ignore  - for check error
+    arg_2: int = field(default=1, metadata=add_argument_metadata(default=2.))
+    arg_3: int = field(default=1, metadata=add_argument_metadata(default=1.))
 
 
 def test_type_def(capsys: CaptureFixture[str]):
