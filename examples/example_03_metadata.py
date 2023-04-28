@@ -5,9 +5,7 @@ from argparsecfg.core import ArgumentParserCfg, add_argument_metadata, parse_arg
 
 # Create config for parser
 parser_cfg = ArgumentParserCfg(
-    prog="name",
-    description="example prog",
-    epilog="nothing done, just example..."
+    prog="name", description="example prog", epilog="nothing done, just example..."
 )
 
 
@@ -22,9 +20,7 @@ class AppCfg:
     arg_2: float = field(
         default=0.0,
         # you can use function for create metadata
-        metadata=add_argument_metadata(
-            help="argument 2, float"
-        )
+        metadata=add_argument_metadata(help="argument 2, float"),
     )
     arg_3: str = field(
         default="",

@@ -5,8 +5,7 @@ import dataclasses
 import sys
 from argparse import HelpFormatter
 from dataclasses import MISSING, Field, asdict, dataclass, field
-from typing import (Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type,
-                    Union)
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 _MISSING_TYPE = type(MISSING)
 
@@ -32,7 +31,9 @@ class ArgumentParserCfg:
     exit_on_error: bool = True
 
 
-def create_parser(parser_cfg: Optional[ArgumentParserCfg] = None) -> argparse.ArgumentParser:
+def create_parser(
+    parser_cfg: Optional[ArgumentParserCfg] = None,
+) -> argparse.ArgumentParser:
     """Create argparse parser."""
     if parser_cfg is None:
         parser_cfg = ArgumentParserCfg()
@@ -147,9 +148,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
             print(
                 f"Warning: arg {dc_field.name} type is {kwargs['type']} but at metadata {metadata_type}"
             )
-    if isinstance(
-        dc_field.default, _MISSING_TYPE
-    ):
+    if isinstance(dc_field.default, _MISSING_TYPE):
         default = None
     else:
         default = dc_field.default
@@ -200,26 +199,28 @@ def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -
 
 
 def field_argument(
-        *,
-        default: Any = MISSING,
-        default_factory: Any = MISSING,
-        init: bool = True,
-        repr: bool = True,  # pylint: disable=redefined-builtin
-        hash: Optional[bool] = None,  # pylint: disable=redefined-builtin
-        compare: bool = True,
-        metadata: Optional[Mapping[Any, Any]] = None,
-        kw_only: bool = MISSING,  # type: ignore
-        flag: Optional[str] = None,
-        action: Optional[str] = None,
-        nargs: Optional[int] = None,
-        const: Optional[str] = None,
-        type: Union[str, argparse.FileType, None] = None,  # pylint: disable=redefined-builtin
-        choices: Optional[Iterable[Any]] = None,
-        required: bool = False,
-        help: Optional[str] = None,  # pylint: disable=redefined-builtin
-        metavar: Optional[str] = None,
-        dest: Optional[str] = None,
-        version: Optional[str] = None,  # pylint: disable=unused-argument
+    *,
+    default: Any = MISSING,
+    default_factory: Any = MISSING,
+    init: bool = True,
+    repr: bool = True,  # pylint: disable=redefined-builtin
+    hash: Optional[bool] = None,  # pylint: disable=redefined-builtin
+    compare: bool = True,
+    metadata: Optional[Mapping[Any, Any]] = None,
+    kw_only: bool = MISSING,  # type: ignore
+    flag: Optional[str] = None,
+    action: Optional[str] = None,
+    nargs: Optional[int] = None,
+    const: Optional[str] = None,
+    type: Union[
+        str, argparse.FileType, None
+    ] = None,  # pylint: disable=redefined-builtin
+    choices: Optional[Iterable[Any]] = None,
+    required: bool = False,
+    help: Optional[str] = None,  # pylint: disable=redefined-builtin
+    metavar: Optional[str] = None,
+    dest: Optional[str] = None,
+    version: Optional[str] = None,  # pylint: disable=unused-argument
 ) -> Any:
     """Return an object to identify dataclass fields with arguments for argparse.
     Wrapper over dataclasses.field.
@@ -267,6 +268,6 @@ def field_argument(
     field_kwargs["metadata"] = arg_metadata
 
     if default is not MISSING and default_factory is not MISSING:  # pragma: no cover
-        raise ValueError('cannot specify both default and default_factory')
+        raise ValueError("cannot specify both default and default_factory")
 
     return Field(**field_kwargs)

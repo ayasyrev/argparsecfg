@@ -1,14 +1,16 @@
 # Example 3 - create config with dataclass, arguments options as fields.
 from dataclasses import dataclass
 
-from argparsecfg.core import (ArgumentParserCfg, add_argument_metadata,
-                              field_argument, parse_args)
+from argparsecfg.core import (
+    ArgumentParserCfg,
+    add_argument_metadata,
+    field_argument,
+    parse_args,
+)
 
 # Create config for parser
 parser_cfg = ArgumentParserCfg(
-    prog="name",
-    description="example prog",
-    epilog="nothing done, just example..."
+    prog="name", description="example prog", epilog="nothing done, just example..."
 )
 
 
@@ -22,9 +24,7 @@ class AppCfg:
     arg_2: float = field_argument(
         default=0.0,
         # you can use metadata.
-        metadata=add_argument_metadata(
-            help="argument 2, float"
-        )
+        metadata=add_argument_metadata(help="argument 2, float"),
     )
     arg_3: str = field_argument(
         default="",
