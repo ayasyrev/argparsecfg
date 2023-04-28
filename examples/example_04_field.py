@@ -1,7 +1,8 @@
-# Example 3 - create config with dataclass, arguments options as metadata at fields.
-from dataclasses import dataclass, field
-from argparsecfg.core import ArgumentParserCfg, add_argument_metadata, parse_args
+# Example 3 - create config with dataclass, arguments options as fields.
+from dataclasses import dataclass
 
+from argparsecfg.core import (ArgumentParserCfg, add_argument_metadata,
+                              field_argument, parse_args)
 
 # Create config for parser
 parser_cfg = ArgumentParserCfg(
@@ -14,26 +15,22 @@ parser_cfg = ArgumentParserCfg(
 # Create config for App as dataclass
 @dataclass
 class AppCfg:
-    arg_1: int = field(
+    arg_1: int = field_argument(
         default=0,
-        # add argument option
-        metadata={"help": "argument 1, int"},
+        help="argument 1, int",
     )
-    arg_2: float = field(
+    arg_2: float = field_argument(
         default=0.0,
-        # you can use function for create metadata
+        # you can use metadata.
         metadata=add_argument_metadata(
             help="argument 2, float"
         )
     )
-    arg_3: str = field(
+    arg_3: str = field_argument(
         default="",
-        metadata=add_argument_metadata(
-            # first arg can be additional flag, as add_argument at argparse parser
-            # "-s" or just "s"
-            "s",
-            help="string arg, can be used with short flag -s",
-        ),
+        # flag - "-s" or just "s"
+        flag="s",
+        help="string arg, can be used with short flag -s",
     )
 
 

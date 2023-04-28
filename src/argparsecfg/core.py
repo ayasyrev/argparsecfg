@@ -4,10 +4,9 @@ import argparse
 import dataclasses
 import sys
 from argparse import HelpFormatter
-from dataclasses import Field, asdict, dataclass, field, MISSING
-from types import MappingProxyType
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
-
+from dataclasses import MISSING, Field, asdict, dataclass, field
+from typing import (Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type,
+                    Union)
 
 _MISSING_TYPE = type(MISSING)
 
@@ -114,7 +113,7 @@ def add_argument_metadata(
 
 
 def parse_metadata(
-    metadata: MappingProxyType[str, Any],
+    metadata: Mapping[str, Any],
 ) -> Dict[str, Any]:
     return {
         key: val
@@ -198,3 +197,76 @@ def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -
     add_args_from_dc(parser, cfg)
     args = parser.parse_args()
     return create_dc_obj(cfg, args)
+
+
+def field_argument(
+        *,
+        default: Any = MISSING,
+        default_factory: Any = MISSING,
+        init: bool = True,
+        repr: bool = True,  # pylint: disable=redefined-builtin
+        hash: Optional[bool] = None,  # pylint: disable=redefined-builtin
+        compare: bool = True,
+        metadata: Optional[Mapping[Any, Any]] = None,
+        kw_only: bool = MISSING,  # type: ignore
+        flag: Optional[str] = None,
+        action: Optional[str] = None,
+        nargs: Optional[int] = None,
+        const: Optional[str] = None,
+        type: Union[str, argparse.FileType, None] = None,  # pylint: disable=redefined-builtin
+        choices: Optional[Iterable[Any]] = None,
+        required: bool = False,
+        help: Optional[str] = None,  # pylint: disable=redefined-builtin
+        metavar: Optional[str] = None,
+        dest: Optional[str] = None,
+        version: Optional[str] = None,  # pylint: disable=unused-argument
+) -> Any:
+    """Return an object to identify dataclass fields with arguments for argparse.
+    Wrapper over dataclasses.field.
+
+    default is the default value of the field.  default_factory is a
+    0-argument function called to initialize a field's value.  If init
+    is true, the field will be a parameter to the class's __init__()
+    function.  If repr is true, the field will be included in the
+    object's repr().  If hash is true, the field will be included in the
+    object's hash().  If compare is true, the field will be used in
+    comparison functions.  metadata, if specified, must be a mapping
+    which is stored but not otherwise examined by dataclass.  If kw_only
+    is true, the field will become a keyword-only parameter to
+    __init__().
+
+    It is an error to specify both default and default_factory.
+    """
+
+    arg_metadata = add_argument_metadata(
+        flag=flag,
+        action=action,
+        nargs=nargs,
+        const=const,
+        type=type,
+        choices=choices,
+        required=required,
+        help=help,
+        metavar=metavar,
+        dest=dest,
+        # version=version,
+    )
+    field_kwargs = dict(
+        default=default,
+        default_factory=default_factory,
+        init=init,
+        repr=repr,
+        hash=hash,
+        compare=compare,
+    )
+    if sys.version_info.minor >= 10:  # from python 3.10  # pragma: no cover
+        field_kwargs["kw_only"] = kw_only
+
+    if metadata is not None:
+        arg_metadata.update(metadata)
+    field_kwargs["metadata"] = arg_metadata
+
+    if default is not MISSING and default_factory is not MISSING:  # pragma: no cover
+        raise ValueError('cannot specify both default and default_factory')
+
+    return Field(**field_kwargs)

@@ -1,24 +1,30 @@
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from _pytest.capture import CaptureFixture
 
-from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc, create_dc_obj,
-                              create_parser, add_argument_metadata)
+from argparsecfg.core import (
+    ArgumentParserCfg,
+    add_args_from_dc,
+    create_dc_obj,
+    create_parser,
+    add_argument_metadata,
+    field_argument,
+)
 
 from .test_tools import parsers_actions_equal, parsers_args_equal
 
 
 @dataclass
 class ArgHelp:
-    arg_int: int = field(metadata={"help": "simple help"})
-    arg_float: float = field(
+    arg_int: int = field_argument(help="simple help")
+    arg_float: float = field_argument(
         default=0.0,
         metadata={"help": "simple help"},
     )
-    arg_str: str = field(
+    arg_str: str = field_argument(
         default="",
-        metadata=add_argument_metadata(help="simple help"),
+        help="simple help",
     )
 
 
@@ -57,10 +63,10 @@ def test_parser():
 
 @dataclass
 class ArgFlag:
-    arg_1: int = field(default=1, metadata=add_argument_metadata("-a"))
-    arg_2: int = field(default=1, metadata=add_argument_metadata("b"))
-    arg_3: int = field(default=1, metadata={"flag": "-c"})
-    arg_4: int = field(default=1, metadata={"flag": "d"})
+    arg_1: int = field_argument(default=1, metadata=add_argument_metadata("-a"))
+    arg_2: int = field_argument(default=1, metadata=add_argument_metadata("b"))
+    arg_3: int = field_argument(default=1, metadata={"flag": "-c"})
+    arg_4: int = field_argument(default=1, metadata={"flag": "d"})
 
 
 def test_add_flag():
@@ -86,9 +92,11 @@ def test_add_flag():
 
 @dataclass
 class ArgTypeDef:
-    arg_1: int = field(default=1, metadata=add_argument_metadata(type=float))  # type: ignore  - for check error
-    arg_2: int = field(default=1, metadata=add_argument_metadata(default=2.))
-    arg_3: int = field(default=1, metadata=add_argument_metadata(default=1.))
+    arg_1: int = field_argument(
+        default=1, metadata=add_argument_metadata(type=float)  # type: ignore - for check error
+    )
+    arg_2: int = field_argument(default=1, metadata=add_argument_metadata(default=2.0))
+    arg_3: int = field_argument(default=1, metadata=add_argument_metadata(default=1.0))
 
 
 def test_type_def(capsys: CaptureFixture[str]):
