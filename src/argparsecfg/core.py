@@ -4,9 +4,12 @@ import argparse
 import dataclasses
 import sys
 from argparse import HelpFormatter
-from dataclasses import Field, asdict, dataclass, field
+from dataclasses import Field, asdict, dataclass, field, MISSING
 from types import MappingProxyType
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+
+
+_MISSING_TYPE = type(MISSING)
 
 
 @dataclass
@@ -80,16 +83,16 @@ def arg_metadata(
     # default set at dataclass field, check type!
     default: Optional[Any] = None,  # Any = ...,
     # ! set type at dataclass field! check! ((str) -> _T@add_argument) | FileType = ...,
-    type: Union[
+    type: Union[  # pylint: disable=redefined-builtin
         str, argparse.FileType, None
-    ] = None,  # pylint: disable=redefined-builtin
+    ] = None,
     # check choices type! Iterable[_T@add_argument] | None = ...,
     choices: Optional[Iterable[Any]] = None,
     required: bool = False,  # = ...,
     help: Optional[str] = None,  # pylint: disable=redefined-builtin
     metavar: Union[str, Tuple[str, ...], None] = None,  # |  = ...,
     dest: Optional[str] = None,
-    version: Optional[str] = None,  # not implemented
+    version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
 ) -> Dict[str, Any]:
     """create dict with args for argparse.add_argument"""
     return asdict(
@@ -146,7 +149,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
                 f"Warning: arg {dc_field.name} type is {kwargs['type']} but at metadata {metadata_type}"
             )
     if isinstance(
-        dc_field.default, dataclasses._MISSING_TYPE  # pylint: disable=protected-access
+        dc_field.default, _MISSING_TYPE
     ):
         default = None
     else:
@@ -170,7 +173,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
 
 
 def add_args_from_dc(parser: argparse.ArgumentParser, dc: Type[Any]) -> None:
-    """add arguments tu parser from dataclass fields"""
+    """add arguments to parser from dataclass fields"""
     if dataclasses.is_dataclass(dc):
         for dc_field in dc.__dataclass_fields__.values():
             add_arg(parser, dc_field)
@@ -187,3 +190,11 @@ def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> object:
         key: val for key, val in args.__dict__.items() if key in dc.__dataclass_fields__
     }
     return dc(**kwargs)
+
+
+def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -> Any:
+    """parse args"""
+    parser = create_parser(parser_cfg)
+    add_args_from_dc(parser, cfg)
+    args = parser.parse_args()
+    return create_dc_obj(cfg, args)
