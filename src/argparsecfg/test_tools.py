@@ -86,3 +86,17 @@ def parsers_equal(
     return parsers_args_equal(parser_1, parser_2) and parsers_actions_equal(
         parser_1, parser_2
     )
+
+
+def parsers_equal_typed(
+    parser_1: argparse.ArgumentParser,
+    parser_2: argparse.ArgumentParser,
+) -> bool:
+    """Compare two parsers, dont care type None vs str"""
+    diff = parsers_actions_diff(parser_1, parser_2)
+    if len(diff) > 0:
+        for item in diff.copy():
+            types_tuple = item.get("type", None)
+            if types_tuple in ((str, None), (None, str)):
+                diff.remove(item)
+    return len(diff) == 0

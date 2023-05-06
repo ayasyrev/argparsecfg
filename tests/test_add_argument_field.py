@@ -3,10 +3,20 @@ from dataclasses import dataclass
 
 from _pytest.capture import CaptureFixture
 
-from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc,
-                              add_argument_metadata, create_dc_obj,
-                              create_parser, field_argument)
-from argparsecfg.test_tools import parsers_actions_equal, parsers_args_equal
+from argparsecfg.core import (
+    ArgumentParserCfg,
+    add_args_from_dc,
+    add_argument_metadata,
+    create_dc_obj,
+    create_parser,
+    field_argument,
+)
+from argparsecfg.test_tools import (
+    parsers_actions_equal,
+    parsers_args_equal,
+    parsers_equal,
+    parsers_equal_typed,
+)
 
 
 @dataclass
@@ -26,7 +36,8 @@ def test_add_args_help():
     """test basic args with help"""
     # base parser
     parser_base = argparse.ArgumentParser()
-    parser_base.add_argument("--arg_int", type=int, required=True, help="simple help")
+    # parser_base.add_argument("--arg_int", type=int, required=True, help="simple help")
+    parser_base.add_argument("--arg_int", type=int, help="simple help")
     parser_base.add_argument("--arg_float", type=float, default=0.0, help="simple help")
     parser_base.add_argument("--arg_str", type=str, default="", help="simple help")
 
@@ -38,6 +49,7 @@ def test_add_args_help():
     add_args_from_dc(parser, ArgHelp)
     assert parsers_args_equal(parser_base, parser)
     assert parsers_actions_equal(parser_base, parser)
+    # assert parsers_actions_diff(parser_base, parser) == []
     assert parser_base.format_help() == parser.format_help()
 
 
@@ -66,10 +78,10 @@ class ArgFlag:
 def test_add_flag():
     "test dc w flags"
     parser_base = argparse.ArgumentParser()
-    parser_base.add_argument("--arg_1", "-a", type=int, default=1)
-    parser_base.add_argument("--arg_2", "-b", type=int, default=1)
-    parser_base.add_argument("--arg_3", "-c", type=int, default=1)
-    parser_base.add_argument("--arg_4", "-d", type=int, default=1)
+    parser_base.add_argument("-a", "--arg_1", type=int, default=1)
+    parser_base.add_argument("-b", "--arg_2", type=int, default=1)
+    parser_base.add_argument("-c", "--arg_3", type=int, default=1)
+    parser_base.add_argument("-d", "--arg_4", type=int, default=1)
 
     parser = create_parser()
     add_args_from_dc(parser, ArgFlag)
@@ -117,3 +129,23 @@ def test_type_def(capsys: CaptureFixture[str]):
     # obj same data from dataclass
     dc_obj_default = ArgTypeDef()
     assert dc_obj_parsed == dc_obj_default
+
+
+@dataclass
+class ArgPositional:
+    arg_1: str = field_argument("arg_1")
+    arg_2: str = field_argument("-a", "--arg_2")
+    arg_3: str = field_argument("--arg_3")
+
+
+def test_arg_positional():
+    "test argument positional"
+    parser_base = argparse.ArgumentParser()
+    parser_base.add_argument("arg_1")
+    parser_base.add_argument("-a", "--arg_2")
+    parser_base.add_argument("arg_3")
+
+    parser = create_parser()
+    add_args_from_dc(parser, ArgPositional)
+    assert not parsers_equal(parser_base, parser)
+    assert parsers_equal_typed(parser_base, parser)
