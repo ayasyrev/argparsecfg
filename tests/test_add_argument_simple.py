@@ -19,7 +19,8 @@ def test_add_args_simple(capsys: CaptureFixture[str]):
     """test basic args"""
     # base parser
     parser_base = argparse.ArgumentParser()
-    parser_base.add_argument("--arg_int", type=int, required=True)
+    # parser_base.add_argument("--arg_int", type=int, required=True)
+    parser_base.add_argument("--arg_int", type=int)
     parser_base.add_argument("--arg_float", type=float, default=0.0)
     parser_base.add_argument("--arg_str", type=str, default="")
 

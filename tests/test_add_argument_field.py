@@ -26,7 +26,8 @@ def test_add_args_help():
     """test basic args with help"""
     # base parser
     parser_base = argparse.ArgumentParser()
-    parser_base.add_argument("--arg_int", type=int, required=True, help="simple help")
+    # parser_base.add_argument("--arg_int", type=int, required=True, help="simple help")
+    parser_base.add_argument("--arg_int", type=int, help="simple help")
     parser_base.add_argument("--arg_float", type=float, default=0.0, help="simple help")
     parser_base.add_argument("--arg_str", type=str, default="", help="simple help")
 
@@ -38,6 +39,7 @@ def test_add_args_help():
     add_args_from_dc(parser, ArgHelp)
     assert parsers_args_equal(parser_base, parser)
     assert parsers_actions_equal(parser_base, parser)
+    # assert parsers_actions_diff(parser_base, parser) == []
     assert parser_base.format_help() == parser.format_help()
 
 

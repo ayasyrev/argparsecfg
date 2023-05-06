@@ -130,13 +130,18 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
         kwargs = parse_metadata(dc_field.metadata)
         flag = kwargs.pop("flag", None)
         if flag is not None:
-            # todo check flag correct
-            flags.insert(
-                0,
-                flag
-                if flag.startswith(parser.prefix_chars)
-                else f"{parser.prefix_chars}{flag}"
-            )
+            if flag == "POSITIONAL_ARGUMENT":
+                flags = [kwargs.pop("dest")]
+                kwargs.pop("required")
+                # positional_arg = True
+            else:
+                # todo check flag correct
+                flags.insert(
+                    0,
+                    flag
+                    if flag.startswith(parser.prefix_chars)
+                    else f"{parser.prefix_chars}{flag}"
+                )
     else:
         kwargs: dict[str, Any] = {}
     # check values from metadata - default & type
@@ -153,6 +158,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
         default = None
     else:
         default = dc_field.default
+        kwargs["default"] = default
 
     if dc_field.metadata and metadata_default:  # check only if metadata
         if not isinstance(default, type(metadata_default)):
@@ -164,10 +170,12 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
         if default != metadata_default:
             print(f"Warning: default={default}, metadata_default={metadata_default}")
 
-    if default is None:
-        kwargs["required"] = True
-    else:
-        kwargs["default"] = default
+    # if default is None:
+    #     kwargs["required"] = True
+    # else:
+    # if positional_arg:
+    #     kwargs.pop("required", None)
+
     parser.add_argument(*flags, **kwargs)
 
 
@@ -200,7 +208,8 @@ def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -
 
 
 def field_argument(
-    *,
+    *args: str,
+    # *,
     default: Any = MISSING,
     default_factory: Any = MISSING,
     init: bool = True,
@@ -213,9 +222,9 @@ def field_argument(
     action: Optional[str] = None,
     nargs: Optional[int] = None,
     const: Optional[str] = None,
-    type: Union[
+    type: Union[  # pylint: disable=redefined-builtin
         str, argparse.FileType, None
-    ] = None,  # pylint: disable=redefined-builtin
+    ] = None,
     choices: Optional[Iterable[Any]] = None,
     required: bool = False,
     help: Optional[str] = None,  # pylint: disable=redefined-builtin
@@ -239,6 +248,21 @@ def field_argument(
 
     It is an error to specify both default and default_factory.
     """
+    if args:
+        if len(args) == 1:
+            if args[0][0] == "-":
+                flag = args[0]
+            else:
+                dest = args[0]  # ?disable flag
+                flag = "POSITIONAL_ARGUMENT"  # for disable later
+        else:
+            if len(args) == 2:
+                flag = args[0]  # expecting short flag first
+                dest = args[1]
+                if dest.startswith("--"):
+                    dest = dest[2:]
+            else:
+                raise ValueError("Invalid number of arguments")
 
     arg_metadata = add_argument_metadata(
         flag=flag,
@@ -253,14 +277,14 @@ def field_argument(
         dest=dest,
         # version=version,
     )
-    field_kwargs = dict(
-        default=default,
-        default_factory=default_factory,
-        init=init,
-        repr=repr,
-        hash=hash,
-        compare=compare,
-    )
+    field_kwargs = {
+        "default": default,
+        "default_factory": default_factory,
+        "init": init,
+        "repr": repr,
+        "hash": hash,
+        "compare": compare,
+    }
     if sys.version_info.minor >= 10:  # from python 3.10  # pragma: no cover
         field_kwargs["kw_only"] = kw_only
 
