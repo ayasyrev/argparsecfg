@@ -1,8 +1,7 @@
 import argparse
 
 from argparsecfg.core import ArgumentParserCfg, create_parser
-
-from .test_tools import parsers_args_equal, parsers_actions_equal
+from argparsecfg.test_tools import parsers_actions_equal, parsers_args_equal
 
 
 def test_create_parser_default():
