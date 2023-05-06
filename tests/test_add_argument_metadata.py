@@ -3,9 +3,13 @@ from dataclasses import dataclass, field
 
 from _pytest.capture import CaptureFixture
 
-from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc,
-                              add_argument_metadata, create_dc_obj,
-                              create_parser)
+from argparsecfg.core import (
+    ArgumentParserCfg,
+    add_args_from_dc,
+    add_argument_metadata,
+    create_dc_obj,
+    create_parser,
+)
 from argparsecfg.test_tools import parsers_actions_equal, parsers_args_equal
 
 

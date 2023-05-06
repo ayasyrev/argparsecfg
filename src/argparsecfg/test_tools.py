@@ -97,6 +97,6 @@ def parsers_equal_typed(
     if len(diff) > 0:
         for item in diff.copy():
             types_tuple = item.get("type", None)
-            if types_tuple == (str, None) or types_tuple == (None, str):
+            if types_tuple in ((str, None), (None, str)):
                 diff.remove(item)
     return len(diff) == 0

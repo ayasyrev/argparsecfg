@@ -140,7 +140,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
                     0,
                     flag
                     if flag.startswith(parser.prefix_chars)
-                    else f"{parser.prefix_chars}{flag}"
+                    else f"{parser.prefix_chars}{flag}",
                 )
     else:
         kwargs: dict[str, Any] = {}
