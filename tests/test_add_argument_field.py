@@ -11,7 +11,12 @@ from argparsecfg.core import (
     create_parser,
     field_argument,
 )
-from argparsecfg.test_tools import parsers_actions_equal, parsers_args_equal
+from argparsecfg.test_tools import (
+    parsers_actions_equal,
+    parsers_args_equal,
+    parsers_equal,
+    parsers_equal_typed,
+)
 
 
 @dataclass
@@ -124,3 +129,23 @@ def test_type_def(capsys: CaptureFixture[str]):
     # obj same data from dataclass
     dc_obj_default = ArgTypeDef()
     assert dc_obj_parsed == dc_obj_default
+
+
+@dataclass
+class ArgPositional:
+    arg_1: str = field_argument("arg_1")
+    arg_2: str = field_argument("-a", "--arg_2")
+    arg_3: str = field_argument("--arg_3")
+
+
+def test_arg_positional():
+    "test argument positional"
+    parser_base = argparse.ArgumentParser()
+    parser_base.add_argument("arg_1")
+    parser_base.add_argument("-a", "--arg_2")
+    parser_base.add_argument("arg_3")
+
+    parser = create_parser()
+    add_args_from_dc(parser, ArgPositional)
+    assert not parsers_equal(parser_base, parser)
+    assert parsers_equal_typed(parser_base, parser)

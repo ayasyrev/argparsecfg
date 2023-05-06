@@ -8,6 +8,7 @@ from argparsecfg.test_tools import (
     parsers_actions_equal,
     parsers_args_equal,
     parsers_equal,
+    parsers_equal_typed,
 )
 
 
@@ -97,3 +98,19 @@ def test_parsers_equal():
     assert not parsers_equal(parser_1, parser_2)
     parser_2.add_argument("arg1")
     assert parsers_equal(parser_1, parser_2)
+
+
+def test_parsers_equal_typed():
+    """test parsers_equal"""
+    parser_1 = argparse.ArgumentParser()
+    parser_2 = argparse.ArgumentParser()
+    parser_1.add_argument("arg1")
+    parser_2.add_argument("arg1", type=str)
+    assert not parsers_equal(parser_1, parser_2)
+    diff = parsers_actions_diff(parser_1, parser_2)
+    assert diff == [{"type": (None, str)}]
+    assert parsers_equal_typed(parser_1, parser_2)
+    # parser_1.add_argument("arg1")
+    # assert not parsers_equal(parser_1, parser_2)
+    # parser_2.add_argument("arg1")
+    # assert parsers_equal(parser_1, parser_2)

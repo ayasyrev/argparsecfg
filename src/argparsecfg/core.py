@@ -261,7 +261,7 @@ def field_argument(
                 dest = args[1]
                 if dest.startswith("--"):
                     dest = dest[2:]
-            else:
+            else:  # pragma: no cover
                 raise ValueError("Invalid number of arguments")
 
     arg_metadata = add_argument_metadata(
