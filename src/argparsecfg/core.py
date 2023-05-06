@@ -131,7 +131,8 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
         flag = kwargs.pop("flag", None)
         if flag is not None:
             # todo check flag correct
-            flags.append(
+            flags.insert(
+                0,
                 flag
                 if flag.startswith(parser.prefix_chars)
                 else f"{parser.prefix_chars}{flag}"

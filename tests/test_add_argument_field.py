@@ -66,10 +66,10 @@ class ArgFlag:
 def test_add_flag():
     "test dc w flags"
     parser_base = argparse.ArgumentParser()
-    parser_base.add_argument("--arg_1", "-a", type=int, default=1)
-    parser_base.add_argument("--arg_2", "-b", type=int, default=1)
-    parser_base.add_argument("--arg_3", "-c", type=int, default=1)
-    parser_base.add_argument("--arg_4", "-d", type=int, default=1)
+    parser_base.add_argument("-a", "--arg_1", type=int, default=1)
+    parser_base.add_argument("-b", "--arg_2", type=int, default=1)
+    parser_base.add_argument("-c", "--arg_3", type=int, default=1)
+    parser_base.add_argument("-d", "--arg_4", type=int, default=1)
 
     parser = create_parser()
     add_args_from_dc(parser, ArgFlag)
