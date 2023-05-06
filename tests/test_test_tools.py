@@ -1,9 +1,14 @@
 import argparse
 
-from argparsecfg.test_tools import (actions_diff, actions_equal, actions_same,
-                                    parsers_actions_diff,
-                                    parsers_actions_equal, parsers_args_equal,
-                                    parsers_equal)
+from argparsecfg.test_tools import (
+    actions_diff,
+    actions_equal,
+    actions_same,
+    parsers_actions_diff,
+    parsers_actions_equal,
+    parsers_args_equal,
+    parsers_equal,
+)
 
 
 def test_args_equal():
@@ -79,7 +84,7 @@ def tests_parsers_actions_diff():
     # # different actions
     parser_2 = argparse.ArgumentParser()
     parser_2.add_argument("arg1", action="store_true")
-    expected = [{'action_type': (argparse._StoreAction, argparse._StoreTrueAction)}]
+    expected = [{"action_type": (argparse._StoreAction, argparse._StoreTrueAction)}]
     assert parsers_actions_diff(parser_1, parser_2) == expected
 
 

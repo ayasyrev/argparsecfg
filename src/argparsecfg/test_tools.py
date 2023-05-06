@@ -29,7 +29,9 @@ def actions_equal(action1: argparse.Action, action2: argparse.Action) -> bool:
     )
 
 
-def actions_diff(action1: argparse.Action, action2: argparse.Action) -> Dict[str, Tuple[Any, Any]]:
+def actions_diff(
+    action1: argparse.Action, action2: argparse.Action
+) -> Dict[str, Tuple[Any, Any]]:
     """Compare actions at two parsers"""
     if actions_same(action1, action2):
         return {
