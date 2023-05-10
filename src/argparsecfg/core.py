@@ -67,22 +67,19 @@ def get_field_type(dc_field: Field[Any]) -> Type[Any]:
 
 
 def add_argument_metadata(
-    flag: Optional[str] = None,  # simple ver, check if "name", list of flags
+    flag: Optional[str] = None,
     *,
-    action: Optional[str] = None,  # _ActionStr | Type[Action] = ...,
-    nargs: Optional[int] = None,  # | _NArgsStr | _SUPPRESS_T = ...,
-    const: Optional[str] = None,  # Any = ...,
-    # default set at dataclass field, check type!
-    default: Optional[Any] = None,  # Any = ...,
-    # ! set type at dataclass field! check! ((str) -> _T@add_argument) | FileType = ...,
+    action: Optional[str] = None,
+    nargs: Optional[int] = None,
+    const: Optional[str] = None,
+    default: Optional[Any] = None,
     type: Union[  # pylint: disable=redefined-builtin
         str, argparse.FileType, None
     ] = None,
-    # check choices type! Iterable[_T@add_argument] | None = ...,
     choices: Optional[Iterable[Any]] = None,
-    required: bool = False,  # = ...,
+    required: bool = False,
     help: Optional[str] = None,  # pylint: disable=redefined-builtin
-    metavar: Union[str, Tuple[str, ...], None] = None,  # |  = ...,
+    metavar: Union[str, Tuple[str, ...], None] = None,
     dest: Optional[str] = None,
     # version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
 ) -> Dict[str, Any]:
@@ -101,21 +98,21 @@ def add_argument_metadata(
         "dest": dest,
         # 'version': version
     }
-    parse_metadata(kwargs)
+    filter_kwargs(kwargs)
     return kwargs
 
 
-def parse_metadata(
-    metadata: Mapping[str, Any],
+def filter_kwargs(
+    kwargs: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    return {key: val for key, val in metadata.items() if key in ARG_KEYWORDS}
+    return {key: val for key, val in kwargs.items() if key in ARG_KEYWORDS}
 
 
 def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     """add argument to parser from dataclass field"""
     flags = [f"{parser.prefix_chars * 2}{dc_field.name}"]
     if dc_field.metadata:
-        kwargs = parse_metadata(dc_field.metadata)
+        kwargs = filter_kwargs(dc_field.metadata)
         flag = kwargs.pop("flag", None)
         if flag is not None:
             if flag == "POSITIONAL_ARGUMENT":
@@ -158,12 +155,6 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
         if default != metadata_default:
             print(f"Warning: default={default}, metadata_default={metadata_default}")
 
-    # if default is None:
-    #     kwargs["required"] = True
-    # else:
-    # if positional_arg:
-    #     kwargs.pop("required", None)
-
     parser.add_argument(*flags, **kwargs)
 
 
@@ -197,7 +188,6 @@ def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -
 
 def field_argument(
     *args: str,
-    # *,
     default: Any = MISSING,
     default_factory: Any = MISSING,
     init: bool = True,
@@ -283,4 +273,4 @@ def field_argument(
     if default is not MISSING and default_factory is not MISSING:  # pragma: no cover
         raise ValueError("cannot specify both default and default_factory")
 
-    return Field(**field_kwargs)
+    return Field(**field_kwargs)  # type: ignore
