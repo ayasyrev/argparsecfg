@@ -8,6 +8,21 @@ from dataclasses import MISSING, Field, asdict, dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 _MISSING_TYPE = type(MISSING)
+ARG_KEYWORDS = (
+    "action",
+    "action",
+    "nargs",
+    "const",
+    "default",
+    "type",
+    "choices",
+    "required",
+    "help",
+    "metavar",
+    "dest",
+    "version",
+    "flag",  # not in argparse, for flags
+)
 
 
 @dataclass
@@ -51,29 +66,6 @@ def get_field_type(dc_field: Field[Any]) -> Type[Any]:
     return dc_field.type
 
 
-@dataclass
-class ArgCfg:
-    """args container for parser.add_argument.
-    first draft.
-    """
-
-    # *name_or_flags: str,
-    flag: Optional[str]  # use it for "short" flag
-    action: Optional[str]  # _ActionStr | Type[Action] = ...,
-    nargs: Optional[int]  # | _NArgsStr | _SUPPRESS_T = ...,
-    const: Optional[str]  # Any = ...,
-    default: Optional[str]  # Any = ...,
-    type: Union[
-        str, argparse.FileType, None
-    ]  # ((str) -> _T@add_argument) | FileType = ...,
-    choices: Optional[Iterable[Any]]  # Iterable[_T@add_argument] | None = ...,
-    required: bool  # = ...,
-    help: Optional[str]  # | None  = ...,
-    metavar: Union[str, Tuple[str, ...], None]  # | tuple[str, ...] | None = ...,
-    dest: Optional[str]  # | None = ...,
-    # version: Optional[str]  # = ...,
-
-
 def add_argument_metadata(
     flag: Optional[str] = None,  # simple ver, check if "name", list of flags
     *,
@@ -92,35 +84,31 @@ def add_argument_metadata(
     help: Optional[str] = None,  # pylint: disable=redefined-builtin
     metavar: Union[str, Tuple[str, ...], None] = None,  # |  = ...,
     dest: Optional[str] = None,
-    version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
+    # version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
 ) -> Dict[str, Any]:
     """create dict with args for argparse.add_argument"""
-    return asdict(
-        ArgCfg(
-            flag=flag,
-            action=action,
-            nargs=nargs,
-            const=const,
-            default=default,
-            type=type,
-            choices=choices,
-            required=required,
-            help=help,
-            metavar=metavar,
-            dest=dest,
-            # version=version,
-        )
-    )
+    kwargs = {
+        "flag": flag,
+        "action": action,
+        "nargs": nargs,
+        "const": const,
+        "default": default,
+        "type": type,
+        "choices": choices,
+        "required": required,
+        "help": help,
+        "metavar": metavar,
+        "dest": dest,
+        # 'version': version
+    }
+    parse_metadata(kwargs)
+    return kwargs
 
 
 def parse_metadata(
     metadata: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    return {
-        key: val
-        for key, val in metadata.items()
-        if key in ArgCfg.__dataclass_fields__  # pylint: disable=no-member
-    }
+    return {key: val for key, val in metadata.items() if key in ARG_KEYWORDS}
 
 
 def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
