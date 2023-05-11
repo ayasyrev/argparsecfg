@@ -123,7 +123,9 @@ def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
 
     if name_or_flags is not None:
         if len(name_or_flags) == 1:
-            if name_or_flags[0][0] != prefix:  # positional. If `dest` exist we rewrite it.
+            if (
+                name_or_flags[0][0] != prefix
+            ):  # positional. If `dest` exist we rewrite it.
                 kwargs["dest"] = name_or_flags[0]
             else:
                 if flag is not None:
@@ -151,11 +153,9 @@ def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def kwargs_add_dc_flag(
-        kwargs: Dict[str, Any],
-        name: str,
-        # arg_type: Type[Any],
-        # default: Any,
-        prefix: str = "-",
+    kwargs: Dict[str, Any],
+    name: str,
+    prefix: str = "-",
 ) -> Dict[str, Any]:
     """add flag from dataclass to kwargs"""
     # positional = False
@@ -177,25 +177,29 @@ def kwargs_add_dc_flag(
 
 
 def kwargs_add_dc_data(
-        kwargs: Dict[str, Any],
-        name: str,
-        arg_type: Type[Any],
-        default: Any,
+    kwargs: Dict[str, Any],
+    name: str,
+    arg_type: Type[Any],
+    default: Any,
 ) -> Dict[str, Any]:
     """add data from dataclass to kwargs"""
-    dest = kwargs.get("dest", None)
+    # dest = kwargs.get("dest", None)
     # check and set type
     metadata_type = kwargs.get("type", None)
     if metadata_type is not None:
         if metadata_type != arg_type:
-            print(f"Warning: arg {name} type is {arg_type}, but at metadata {metadata_type}")
+            print(
+                f"Warning: arg {name} type is {arg_type}, but at metadata {metadata_type}"
+            )
     kwargs["type"] = arg_type
     metadata_default = kwargs.get("default", None)
     if metadata_default is not None and default is None:
         print(f"Warning: arg {name} default={metadata_default} but dc default is None")
     if default is not None:
         if metadata_default is not None and metadata_default != default:
-            print(f"Warning: arg {name} default={default}, but at metadata={metadata_default}")
+            print(
+                f"Warning: arg {name} default={default}, but at metadata={metadata_default}"
+            )
         kwargs["default"] = default
     # else:  # required or positional
     #     if dest is None:
