@@ -26,8 +26,8 @@ class AppCfg:
         default="",
         metadata=add_argument_metadata(
             # first arg can be additional flag, as add_argument at argparse parser
-            # "-s" or just "s"
-            "s",
+            # "-s" or flag="s", prefix will be added.
+            "-s",
             help="string arg, can be used with short flag -s",
         ),
     )
