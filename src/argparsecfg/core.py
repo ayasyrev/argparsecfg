@@ -150,19 +150,19 @@ def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     return kwargs
 
 
-def kwargs_add_dc_data(
+def kwargs_add_dc_flag(
         kwargs: Dict[str, Any],
         name: str,
-        arg_type: Type[Any],
-        default: Any,
+        # arg_type: Type[Any],
+        # default: Any,
         prefix: str = "-",
 ) -> Dict[str, Any]:
-    """add data from dataclass to kwargs"""
-    positional = False
+    """add flag from dataclass to kwargs"""
+    # positional = False
     flags = kwargs.pop("flags", None)
     if flags is None:
         if kwargs.get("dest", None):  # positional
-            positional = True
+            # positional = True
             if kwargs["dest"] != name:
                 print(f"Warning: {kwargs['dest']} but dc name is {name}")
         else:
@@ -173,8 +173,19 @@ def kwargs_add_dc_data(
         if flags[1] != f"{prefix*2}{name}":
             print(f"Warning: {flags[1]} but dc name is {name}")
         kwargs["flags"] = (flags[0], f"{prefix*2}{name}")
+    return kwargs
 
-    kwargs["dest"] = name
+
+def kwargs_add_dc_data(
+        kwargs: Dict[str, Any],
+        name: str,
+        arg_type: Type[Any],
+        default: Any,
+        prefix: str = "-",
+) -> Dict[str, Any]:
+    """add data from dataclass to kwargs"""
+    dest = kwargs.get("dest", None)
+    # if dest is not None:
     # check and set type
     metadata_type = kwargs.get("type", None)
     if metadata_type is not None:
@@ -189,7 +200,7 @@ def kwargs_add_dc_data(
             print(f"Warning: arg {name} default={default}, but at metadata={metadata_default}")
         kwargs["default"] = default
     else:  # required or positional
-        if not positional:
+        if dest is None:
             kwargs["required"] = True
     return kwargs
 
@@ -212,6 +223,7 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     else:
         default = dc_field.default
 
+    kwargs = kwargs_add_dc_flag(kwargs, dc_field.name, )
     kwargs = kwargs_add_dc_data(kwargs, dc_field.name, field_type, default)
 
     flags = kwargs.pop("flags", [])
