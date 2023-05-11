@@ -112,18 +112,18 @@ def filter_metadata(
     return {key: val for key, val in metadata.items() if key in ARG_KEYWORDS}
 
 
-def process_flags(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
     """Process flags.
     Remove `name_or_flags`, add `flags` if need."""
     flag = kwargs.pop("flag", None)
     if flag is not None:
-        if not flag.startswith("-"):
-            flag = f"-{flag}"
+        if not flag.startswith(prefix):
+            flag = f"{prefix}{flag}"
     name_or_flags = kwargs.pop("name_or_flags", None)
 
     if name_or_flags is not None:
         if len(name_or_flags) == 1:
-            if name_or_flags[0][0] != "-":  # positional. If `dest` exist we rewrite it.
+            if name_or_flags[0][0] != prefix:  # positional. If `dest` exist we rewrite it.
                 kwargs["dest"] = name_or_flags[0]
             else:
                 if flag is not None:
@@ -143,7 +143,7 @@ def process_flags(kwargs: Dict[str, Any]) -> Dict[str, Any]:
 
 def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """validate kwargs"""
-    action = getattr(kwargs, "action", None)
+    action = kwargs.get("action", None)
     if action in ("store_true", "store_false"):
         kwargs.pop("type", None)
         kwargs.pop("default", None)
@@ -181,11 +181,9 @@ def kwargs_add_dc_data(
         name: str,
         arg_type: Type[Any],
         default: Any,
-        prefix: str = "-",
 ) -> Dict[str, Any]:
     """add data from dataclass to kwargs"""
     dest = kwargs.get("dest", None)
-    # if dest is not None:
     # check and set type
     metadata_type = kwargs.get("type", None)
     if metadata_type is not None:
@@ -199,9 +197,9 @@ def kwargs_add_dc_data(
         if metadata_default is not None and metadata_default != default:
             print(f"Warning: arg {name} default={default}, but at metadata={metadata_default}")
         kwargs["default"] = default
-    else:  # required or positional
-        if dest is None:
-            kwargs["required"] = True
+    # else:  # required or positional
+    #     if dest is None:
+    #         kwargs["required"] = True
     return kwargs
 
 
@@ -209,22 +207,20 @@ def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     """add argument to parser from dataclass field"""
     if dc_field.metadata:
         kwargs = filter_metadata(dc_field.metadata)
-        kwargs = process_flags(kwargs)  # todo add prefix as arg
+        kwargs = process_flags(kwargs, parser.prefix_chars)
     else:
         kwargs: dict[str, Any] = {}
     # validate and set kwargs
-    # flag (name), type, default
-
     # data from dataclass - flag / name, type, default
-    # dc_flag = [f"{parser.prefix_chars * 2}{dc_field.name}"]
     field_type = get_field_type(dc_field)
     if isinstance(dc_field.default, _MISSING_TYPE):
         default = None
     else:
         default = dc_field.default
 
-    kwargs = kwargs_add_dc_flag(kwargs, dc_field.name, )
+    kwargs = kwargs_add_dc_flag(kwargs, dc_field.name, parser.prefix_chars)
     kwargs = kwargs_add_dc_data(kwargs, dc_field.name, field_type, default)
+    kwargs = validate_kwargs(kwargs)
 
     flags = kwargs.pop("flags", [])
     parser.add_argument(*flags, **kwargs)
