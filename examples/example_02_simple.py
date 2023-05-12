@@ -20,3 +20,4 @@ if __name__ == "__main__":
     # now we got object with autocompletion at ide.
     # if you want to play with config at jupyter notebook: import AppCfg.
     print(cfg)
+    assert cfg == AppCfg()
