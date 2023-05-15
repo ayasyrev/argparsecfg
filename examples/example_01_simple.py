@@ -2,6 +2,7 @@
 import argparse
 from dataclasses import dataclass
 from argparsecfg.core import add_args_from_dc, create_dc_obj
+
 # for tests
 from argparsecfg.test_tools import parsers_equal
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     # parse arguments as usual. We got Namespace without typing
     args_namespace = parser.parse_args()
     # create dataclass object from arguments.
-    cfg: AppCfg = create_dc_obj(AppCfg, args_namespace)
+    cfg: AppCfg = create_dc_obj(AppCfg, args_namespace)  # type: ignore
     # now we got object with autocompletion at ide.
     # if you want to play with config at jupyter notebook: import AppCfg.
     print(cfg)

@@ -1,6 +1,9 @@
 # Example 3 - create config with dataclass, arguments options as metadata at fields.
+import argparse  # only for tests
+
 from dataclasses import dataclass, field
 from argparsecfg.core import ArgumentParserCfg, add_argument_metadata, parse_args
+
 # for tests
 from argparsecfg.core import add_args_from_dc, create_parser
 from argparsecfg.test_tools import parsers_equal
@@ -35,13 +38,20 @@ class AppCfg:
         ),
     )
 
-# result parser will be same as below
-import argparse
 
-parser_base = argparse.ArgumentParser(prog="name", description="example prog", epilog="nothing done, just example...")
+# result parser will be same as below
+parser_base = argparse.ArgumentParser(
+    prog="name", description="example prog", epilog="nothing done, just example..."
+)
 parser_base.add_argument("--arg_1", type=int, default=0, help="argument 1, int")
 parser_base.add_argument("--arg_2", type=float, default=0.0, help="argument 2, float")
-parser_base.add_argument("-s", "--arg_3", type=str, default="", help="string arg, can be used with short flag -s")
+parser_base.add_argument(
+    "-s",
+    "--arg_3",
+    type=str,
+    default="",
+    help="string arg, can be used with short flag -s",
+)
 
 
 if __name__ == "__main__":
