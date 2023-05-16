@@ -74,7 +74,7 @@ def tests_parsers_actions_diff():
     parser_2 = argparse.ArgumentParser()
     parser_1.add_argument("arg1")
     parser_2.add_argument("arg1")
-    assert parsers_actions_diff(parser_1, parser_2) == []
+    assert not parsers_actions_diff(parser_1, parser_2)
 
     # # same actions, different args
     parser_2 = argparse.ArgumentParser()
@@ -85,7 +85,8 @@ def tests_parsers_actions_diff():
     # # different actions
     parser_2 = argparse.ArgumentParser()
     parser_2.add_argument("arg1", action="store_true")
-    expected = [{"action_type": (argparse._StoreAction, argparse._StoreTrueAction)}]
+    # pylint: disable=protected-access
+    expected = [{"action_type": (argparse._StoreAction, argparse._StoreTrueAction)}]  # type: ignore
     assert parsers_actions_diff(parser_1, parser_2) == expected
 
 

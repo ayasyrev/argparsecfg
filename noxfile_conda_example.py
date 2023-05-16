@@ -3,7 +3,7 @@ from pathlib import Path
 import nox
 
 example_files = list(Path("examples").glob("example*.py"))
-print(example_files)
+print(f"examples files: {', '.join(file.name for file in example_files)}")
 
 
 @nox.session(python=["3.7", "3.8", "3.9", "3.10", "3.11"], venv_backend="mamba")

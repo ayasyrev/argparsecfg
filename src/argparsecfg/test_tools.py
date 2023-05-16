@@ -15,7 +15,7 @@ def parsers_args_equal(
 
 
 def actions_same(action1: argparse.Action, action2: argparse.Action) -> bool:
-    return type(action1) == type(action2)
+    return isinstance(action1, type(action2))
 
 
 def actions_equal(action1: argparse.Action, action2: argparse.Action) -> bool:
