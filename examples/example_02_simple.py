@@ -1,7 +1,7 @@
 # Basic example - create base config for you app with dataclass.
 # same as example_01_simple.py but parser created at parser_cfg function.
 from dataclasses import dataclass
-from argparsecfg.core import parse_args
+from argparsecfg import parse_args
 
 
 # Create config for App as dataclass

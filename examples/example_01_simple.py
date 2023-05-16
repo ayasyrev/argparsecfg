@@ -1,7 +1,7 @@
 # Basic example - create base config for you app with dataclass.
 import argparse
 from dataclasses import dataclass
-from argparsecfg.core import add_args_from_dc, create_dc_obj
+from argparsecfg import add_args_from_dc, create_dc_obj
 
 # for tests
 from argparsecfg.test_tools import parsers_equal

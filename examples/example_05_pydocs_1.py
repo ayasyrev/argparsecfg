@@ -4,9 +4,9 @@ import argparse
 
 from dataclasses import dataclass
 
-from argparsecfg.core import field_argument as add_argument
+from argparsecfg import field_argument as add_argument
 
-from argparsecfg.core import ArgumentParserCfg, add_args_from_dc, create_parser
+from argparsecfg import ArgumentParserCfg, add_args_from_dc, create_parser
 from argparsecfg.test_tools import parsers_actions_diff, parsers_equal_typed
 
 

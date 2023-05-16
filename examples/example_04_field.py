@@ -3,7 +3,7 @@ import argparse  # only for tests
 
 from dataclasses import dataclass
 
-from argparsecfg.core import (
+from argparsecfg import (
     ArgumentParserCfg,
     add_argument_metadata,
     field_argument,
@@ -11,7 +11,7 @@ from argparsecfg.core import (
 )
 
 # for tests
-from argparsecfg.core import add_args_from_dc, create_parser
+from argparsecfg import add_args_from_dc, create_parser
 from argparsecfg.test_tools import parsers_equal
 
 

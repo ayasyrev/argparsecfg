@@ -2,10 +2,10 @@
 import argparse  # only for tests
 
 from dataclasses import dataclass, field
-from argparsecfg.core import ArgumentParserCfg, add_argument_metadata, parse_args
+from argparsecfg import ArgumentParserCfg, add_argument_metadata, parse_args
 
 # for tests
-from argparsecfg.core import add_args_from_dc, create_parser
+from argparsecfg import add_args_from_dc, create_parser
 from argparsecfg.test_tools import parsers_equal
 
 
