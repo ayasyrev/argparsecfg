@@ -9,8 +9,11 @@ from argparsecfg.core import (
     create_dc_obj,
     create_parser,
 )
-
-from .test_tools import parsers_actions_equal, parsers_args_equal
+from argparsecfg.test_tools import (
+    parsers_actions_diff,
+    parsers_actions_equal,
+    parsers_args_equal,
+)
 
 
 @dataclass
@@ -24,7 +27,8 @@ def test_add_args_simple(capsys: CaptureFixture[str]):
     """test basic args"""
     # base parser
     parser_base = argparse.ArgumentParser()
-    parser_base.add_argument("--arg_int", type=int, required=True)
+    # parser_base.add_argument("--arg_int", type=int, required=True)
+    parser_base.add_argument("--arg_int", type=int)
     parser_base.add_argument("--arg_float", type=float, default=0.0)
     parser_base.add_argument("--arg_str", type=str, default="")
 
@@ -35,6 +39,7 @@ def test_add_args_simple(capsys: CaptureFixture[str]):
     # add arguments - SimpleArg
     add_args_from_dc(parser, SimpleArg)
     assert parsers_args_equal(parser_base, parser)
+    assert not parsers_actions_diff(parser_base, parser)
     assert parsers_actions_equal(parser_base, parser)
     assert parser_base.format_help() == parser.format_help()
 

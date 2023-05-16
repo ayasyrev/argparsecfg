@@ -8,6 +8,23 @@ from dataclasses import MISSING, Field, asdict, dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 _MISSING_TYPE = type(MISSING)
+ARG_KEYWORDS = (
+    "action",
+    "action",
+    "nargs",
+    "const",
+    "default",
+    "type",
+    "choices",
+    "required",
+    "help",
+    "metavar",
+    "dest",
+    "version",
+    # not in argparse, for flags
+    "flag",
+    "name_or_flags",
+)
 
 
 @dataclass
@@ -51,122 +68,165 @@ def get_field_type(dc_field: Field[Any]) -> Type[Any]:
     return dc_field.type
 
 
-@dataclass
-class ArgCfg:
-    """args container for parser.add_argument.
-    first draft.
-    """
-
-    # *name_or_flags: str,
-    flag: Optional[str]  # use it for "short" flag
-    action: Optional[str]  # _ActionStr | Type[Action] = ...,
-    nargs: Optional[int]  # | _NArgsStr | _SUPPRESS_T = ...,
-    const: Optional[str]  # Any = ...,
-    default: Optional[str]  # Any = ...,
-    type: Union[
-        str, argparse.FileType, None
-    ]  # ((str) -> _T@add_argument) | FileType = ...,
-    choices: Optional[Iterable[Any]]  # Iterable[_T@add_argument] | None = ...,
-    required: bool  # = ...,
-    help: Optional[str]  # | None  = ...,
-    metavar: Union[str, Tuple[str, ...], None]  # | tuple[str, ...] | None = ...,
-    dest: Optional[str]  # | None = ...,
-    # version: Optional[str]  # = ...,
-
-
 def add_argument_metadata(
-    flag: Optional[str] = None,  # simple ver, check if "name", list of flags
-    *,
-    action: Optional[str] = None,  # _ActionStr | Type[Action] = ...,
-    nargs: Optional[int] = None,  # | _NArgsStr | _SUPPRESS_T = ...,
-    const: Optional[str] = None,  # Any = ...,
-    # default set at dataclass field, check type!
-    default: Optional[Any] = None,  # Any = ...,
-    # ! set type at dataclass field! check! ((str) -> _T@add_argument) | FileType = ...,
+    *name_or_flags: Optional[str],
+    flag: Optional[str] = None,
+    action: Optional[str] = None,
+    nargs: Optional[int] = None,
+    const: Optional[str] = None,
+    default: Optional[Any] = None,
     type: Union[  # pylint: disable=redefined-builtin
         str, argparse.FileType, None
     ] = None,
-    # check choices type! Iterable[_T@add_argument] | None = ...,
     choices: Optional[Iterable[Any]] = None,
-    required: bool = False,  # = ...,
+    required: Optional[bool] = None,
     help: Optional[str] = None,  # pylint: disable=redefined-builtin
-    metavar: Union[str, Tuple[str, ...], None] = None,  # |  = ...,
+    metavar: Union[str, Tuple[str, ...], None] = None,
     dest: Optional[str] = None,
-    version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
+    # version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
 ) -> Dict[str, Any]:
     """create dict with args for argparse.add_argument"""
-    return asdict(
-        ArgCfg(
-            flag=flag,
-            action=action,
-            nargs=nargs,
-            const=const,
-            default=default,
-            type=type,
-            choices=choices,
-            required=required,
-            help=help,
-            metavar=metavar,
-            dest=dest,
-            # version=version,
-        )
-    )
+    # if not name_or_flags:
+    #     name_or_flags = None
+    kwargs = {
+        "name_or_flags": name_or_flags if name_or_flags else None,
+        "flag": flag,
+        "action": action,
+        "nargs": nargs,
+        "const": const,
+        "default": default,
+        "type": type,
+        "choices": choices,
+        "required": required,
+        "help": help,
+        "metavar": metavar,
+        "dest": dest,
+        # 'version': version
+    }
+    return {key: val for key, val in kwargs.items() if val is not None}
 
 
-def parse_metadata(
+def filter_metadata(
     metadata: Mapping[str, Any],
 ) -> Dict[str, Any]:
-    return {
-        key: val
-        for key, val in metadata.items()
-        if key in ArgCfg.__dataclass_fields__  # pylint: disable=no-member
-    }
+    return {key: val for key, val in metadata.items() if key in ARG_KEYWORDS}
+
+
+def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
+    """Process flags.
+    Remove `name_or_flags`, add `flags` if need."""
+    flag = kwargs.pop("flag", None)
+    if flag is not None:
+        if not flag.startswith(prefix):
+            flag = f"{prefix}{flag}"
+    name_or_flags = kwargs.pop("name_or_flags", None)
+
+    if name_or_flags is not None:
+        if len(name_or_flags) == 1:
+            if (
+                name_or_flags[0][0] != prefix
+            ):  # positional. If `dest` exist we rewrite it.
+                kwargs["dest"] = name_or_flags[0]
+            else:
+                if flag is not None:
+                    kwargs["flags"] = (flag, name_or_flags[0])
+                else:
+                    kwargs["flags"] = name_or_flags
+
+        else:  # if two item - flag is useless
+            if flag is not None:
+                print(f"Warning: got `flag` arg {flag} but args: {name_or_flags} given")
+            kwargs["flags"] = name_or_flags
+    else:
+        if flag is not None:
+            kwargs["flags"] = (flag,)
+    return kwargs
+
+
+def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    """validate kwargs"""
+    action = kwargs.get("action", None)
+    if action in ("store_true", "store_false"):
+        kwargs.pop("type", None)
+        kwargs.pop("default", None)
+    return kwargs
+
+
+def kwargs_add_dc_flag(
+    kwargs: Dict[str, Any],
+    name: str,
+    prefix: str = "-",
+) -> Dict[str, Any]:
+    """add flag from dataclass to kwargs"""
+    # positional = False
+    flags = kwargs.pop("flags", None)
+    if flags is None:
+        if kwargs.get("dest", None):  # positional
+            # positional = True
+            if kwargs["dest"] != name:
+                print(f"Warning: {kwargs['dest']} but dc name is {name}")
+        else:
+            kwargs["flags"] = (f"{prefix*2}{name}",)
+    elif len(flags) == 1:
+        kwargs["flags"] = (*flags, f"{prefix*2}{name}")
+    else:
+        if flags[1] != f"{prefix*2}{name}":
+            print(f"Warning: {flags[1]} but dc name is {name}")
+        kwargs["flags"] = (flags[0], f"{prefix*2}{name}")
+    return kwargs
+
+
+def kwargs_add_dc_data(
+    kwargs: Dict[str, Any],
+    name: str,
+    arg_type: Type[Any],
+    default: Any,
+) -> Dict[str, Any]:
+    """add data from dataclass to kwargs"""
+    # dest = kwargs.get("dest", None)
+    # check and set type
+    metadata_type = kwargs.get("type", None)
+    if metadata_type is not None:
+        if metadata_type != arg_type:
+            print(
+                f"Warning: arg {name} type is {arg_type}, but at metadata {metadata_type}"
+            )
+    kwargs["type"] = arg_type
+    metadata_default = kwargs.get("default", None)
+    if metadata_default is not None and default is None:
+        print(f"Warning: arg {name} default={metadata_default} but dc default is None")
+    if default is not None:
+        if metadata_default is not None and metadata_default != default:
+            print(
+                f"Warning: arg {name} default={default}, but at metadata={metadata_default}"
+            )
+        kwargs["default"] = default
+    # else:  # required or positional
+    #     if dest is None:
+    #         kwargs["required"] = True
+    return kwargs
 
 
 def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     """add argument to parser from dataclass field"""
-    flags = [f"{parser.prefix_chars * 2}{dc_field.name}"]
     if dc_field.metadata:
-        kwargs = parse_metadata(dc_field.metadata)
-        flag = kwargs.pop("flag", None)
-        if flag is not None:
-            # todo check flag correct
-            flags.append(
-                flag
-                if flag.startswith(parser.prefix_chars)
-                else f"{parser.prefix_chars}{flag}"
-            )
+        kwargs = filter_metadata(dc_field.metadata)
+        kwargs = process_flags(kwargs, parser.prefix_chars)
     else:
         kwargs: dict[str, Any] = {}
-    # check values from metadata - default & type
-    metadata_type = kwargs.pop("type", None)
-    metadata_default = kwargs.pop("default", None)
-    kwargs["type"] = get_field_type(dc_field)
-    if metadata_type is not None:
-        if kwargs["type"] != metadata_type:
-            # ? assert
-            print(
-                f"Warning: arg {dc_field.name} type is {kwargs['type']} but at metadata {metadata_type}"
-            )
+    # validate and set kwargs
+    # data from dataclass - flag / name, type, default
+    field_type = get_field_type(dc_field)
     if isinstance(dc_field.default, _MISSING_TYPE):
         default = None
     else:
         default = dc_field.default
 
-    if dc_field.metadata and metadata_default:  # check only if metadata
-        if not isinstance(default, type(metadata_default)):
-            default_type = type(default)
-            metadata_default_type = type(metadata_default)
-            print(
-                f"Warning: default_type={default_type}, metadata_default_type={metadata_default_type}"
-            )
-        if default != metadata_default:
-            print(f"Warning: default={default}, metadata_default={metadata_default}")
+    kwargs = kwargs_add_dc_flag(kwargs, dc_field.name, parser.prefix_chars)
+    kwargs = kwargs_add_dc_data(kwargs, dc_field.name, field_type, default)
+    kwargs = validate_kwargs(kwargs)
 
-    if default is None:
-        kwargs["required"] = True
-    else:
-        kwargs["default"] = default
+    flags = kwargs.pop("flags", [])
     parser.add_argument(*flags, **kwargs)
 
 
@@ -199,7 +259,7 @@ def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -
 
 
 def field_argument(
-    *,
+    *name_or_flags: str,
     default: Any = MISSING,
     default_factory: Any = MISSING,
     init: bool = True,
@@ -212,11 +272,11 @@ def field_argument(
     action: Optional[str] = None,
     nargs: Optional[int] = None,
     const: Optional[str] = None,
-    type: Union[
+    type: Union[  # pylint: disable=redefined-builtin
         str, argparse.FileType, None
-    ] = None,  # pylint: disable=redefined-builtin
+    ] = None,
     choices: Optional[Iterable[Any]] = None,
-    required: bool = False,
+    required: Optional[bool] = None,
     help: Optional[str] = None,  # pylint: disable=redefined-builtin
     metavar: Optional[str] = None,
     dest: Optional[str] = None,
@@ -240,6 +300,7 @@ def field_argument(
     """
 
     arg_metadata = add_argument_metadata(
+        *name_or_flags,
         flag=flag,
         action=action,
         nargs=nargs,
@@ -252,14 +313,14 @@ def field_argument(
         dest=dest,
         # version=version,
     )
-    field_kwargs = dict(
-        default=default,
-        default_factory=default_factory,
-        init=init,
-        repr=repr,
-        hash=hash,
-        compare=compare,
-    )
+    field_kwargs = {
+        "default": default,
+        "default_factory": default_factory,
+        "init": init,
+        "repr": repr,
+        "hash": hash,
+        "compare": compare,
+    }
     if sys.version_info.minor >= 10:  # from python 3.10  # pragma: no cover
         field_kwargs["kw_only"] = kw_only
 
@@ -267,7 +328,4 @@ def field_argument(
         arg_metadata.update(metadata)
     field_kwargs["metadata"] = arg_metadata
 
-    if default is not MISSING and default_factory is not MISSING:  # pragma: no cover
-        raise ValueError("cannot specify both default and default_factory")
-
-    return Field(**field_kwargs)
+    return Field(**field_kwargs)  # type: ignore
