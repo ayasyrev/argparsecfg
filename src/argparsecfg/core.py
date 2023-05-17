@@ -181,7 +181,7 @@ def kwargs_add_dc_flag(
 
     if long_flag and long_flag != dc_flag:
         print(f"Warning: got `flag` {long_flag} but dc name is {name}")
-    kwargs["flags"] = (short_flag, dc_flag) if short_flag else (dc_flag, )
+    kwargs["flags"] = (short_flag, dc_flag) if short_flag else (dc_flag,)
     return kwargs
 
 
@@ -201,10 +201,10 @@ def kwargs_add_dc_data(
                 f"Warning: arg {name} type is {arg_type}, but at metadata {metadata_type}"
             )
     kwargs["type"] = arg_type
-    metadata_default = kwargs.get("default", None)
+    metadata_default = kwargs.pop("default", None)
     if metadata_default is not None and default is None:
         print(f"Warning: arg {name} default={metadata_default} but dc default is None")
-    if default is not None:
+    elif default is not None:
         if metadata_default is not None and metadata_default != default:
             print(
                 f"Warning: arg {name} default={default}, but at metadata={metadata_default}"
@@ -281,7 +281,7 @@ def field_argument(
     action: str | None = None,
     nargs: int | None = None,
     const: Any = None,
-    type: str | argparse.FileType | None = None,   # pylint: disable=redefined-builtin
+    type: str | argparse.FileType | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin

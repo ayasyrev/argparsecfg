@@ -1,10 +1,11 @@
 # pylint: disable=protected-access
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from _pytest.capture import CaptureFixture
 
 from argparsecfg.core import (
     add_args_from_dc,
+    add_argument_metadata,
     create_parser,
     field_argument,
 )
@@ -69,3 +70,57 @@ def test_wrong_dest(capsys: CaptureFixture[str]):
     captured = capsys.readouterr()
     out = captured.out
     assert "arg `dest` arg_2 but dc name is arg_1" in out
+
+
+def test_metadata_wrong_default(capsys: CaptureFixture[str]):
+    """test default different from dc default"""
+
+    @dataclass
+    class ArgFlag:
+        arg_1: int = field(
+            default=1,
+            metadata=add_argument_metadata(default=2),
+        )
+
+    parser = create_parser()
+    add_args_from_dc(parser, ArgFlag)
+    assert parser._actions[1].default == 1
+    captured = capsys.readouterr()
+    out = captured.out
+    assert "arg arg_1 default=1, but at metadata=2" in out
+
+
+def test_metadata_wrong_default_none(capsys: CaptureFixture[str]):
+    """test default different from dc None"""
+
+    @dataclass
+    class ArgFlag:
+        arg_1: int = field(
+            metadata=add_argument_metadata(default=2),
+        )
+
+    parser = create_parser()
+    add_args_from_dc(parser, ArgFlag)
+    assert parser._actions[1].default is None
+    captured = capsys.readouterr()
+    out = captured.out
+    assert "arg arg_1 default=2 but dc default is None" in out
+
+
+def test_metadata_wrong_type(capsys: CaptureFixture[str]):
+    """test type different from dc type"""
+
+    @dataclass
+    class ArgFlag:
+        arg_1: int = field_argument(
+            default=1,
+            type="float",
+        )
+
+    parser = create_parser()
+    add_args_from_dc(parser, ArgFlag)
+    assert parser._actions[1].default == 1
+    assert parser._actions[1].type == int
+    captured = capsys.readouterr()
+    out = captured.out
+    assert "arg arg_1 type is <class 'int'>, but at metadata float" in out
