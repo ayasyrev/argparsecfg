@@ -72,10 +72,10 @@ def add_argument_metadata(
     *name_or_flags: str | None,
     flag: str | None = None,
     action: str | None = None,
-    nargs: int | None = None,
+    nargs: int | str | None = None,
     const: str | None = None,
     default: Any = None,
-    type: str | argparse.FileType | None = None,  # pylint: disable=redefined-builtin
+    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
@@ -248,7 +248,7 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: Type[Any]) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
-def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> object:
+def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
         print(f"Error: {type(dc)} not dataclass type")
@@ -279,9 +279,9 @@ def field_argument(
     kw_only: bool = MISSING,  # type: ignore
     flag: str | None = None,
     action: str | None = None,
-    nargs: int | None = None,
+    nargs: int | str | None = None,
     const: Any = None,
-    type: str | argparse.FileType | None = None,  # pylint: disable=redefined-builtin
+    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin

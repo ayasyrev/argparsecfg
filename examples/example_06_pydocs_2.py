@@ -39,7 +39,7 @@ class AppCfg:
     integers: int = add_argument(
         "integers",
         metavar="N",
-        type=int,
+        type=int,  # type: ignore
         nargs="+",
         help="an integer for the accumulator",
     )
