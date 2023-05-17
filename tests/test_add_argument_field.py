@@ -150,3 +150,29 @@ def test_arg_positional():
     add_args_from_dc(parser, ArgPositional)
     assert not parsers_equal(parser_base, parser)
     assert parsers_equal_typed(parser_base, parser)
+
+
+def test_action_store_const():
+    """test action store_const"""
+    parser_base = argparse.ArgumentParser()
+    # as example at python docs
+    parser_base.add_argument(
+        "--sum",
+        action="store_const",
+        const=sum,
+    )
+    parser_base.add_argument("--verbose", action="store_true")
+
+    @dataclass
+    class ArgStoreConst:
+        sum: int = field_argument(
+            "--sum",
+            action="store_const",
+            const=sum,
+        )
+        verbose: bool = field_argument(
+            action="store_true",
+        )
+    parser = create_parser()
+    add_args_from_dc(parser, ArgStoreConst)
+    assert parsers_args_equal(parser_base, parser)
