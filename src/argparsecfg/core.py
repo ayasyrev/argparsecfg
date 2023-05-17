@@ -5,7 +5,7 @@ import dataclasses
 import sys
 from argparse import HelpFormatter
 from dataclasses import MISSING, Field, asdict, dataclass, field
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Iterable, Mapping, Type
 
 _MISSING_TYPE = type(MISSING)
 ARG_KEYWORDS = (
@@ -33,15 +33,15 @@ class ArgumentParserCfg:
     Parameters same as at argparse.ArgumentParser.
     """
 
-    prog: Optional[str] = None
-    usage: Optional[str] = None
-    description: Optional[str] = None
-    epilog: Optional[str] = None
-    parents: List[str] = field(default_factory=list)
+    prog: str | None = None
+    usage: str | None = None
+    description: str | None = None
+    epilog: str | None = None
+    parents: list[str] = field(default_factory=list)
     formatter_class: Type[HelpFormatter] = HelpFormatter
     prefix_chars: str = "-"
-    fromfile_prefix_chars: Optional[bool] = None
-    argument_default: Optional[str] = None
+    fromfile_prefix_chars: bool | None = None
+    argument_default: str | None = None
     conflict_handler: str = "error"
     add_help: bool = True
     allow_abbrev: bool = True
@@ -49,7 +49,7 @@ class ArgumentParserCfg:
 
 
 def create_parser(
-    parser_cfg: Optional[ArgumentParserCfg] = None,
+    parser_cfg: ArgumentParserCfg | None = None,
 ) -> argparse.ArgumentParser:
     """Create argparse parser."""
     if parser_cfg is None:
@@ -69,22 +69,23 @@ def get_field_type(dc_field: Field[Any]) -> Type[Any]:
 
 
 def add_argument_metadata(
-    *name_or_flags: Optional[str],
-    flag: Optional[str] = None,
-    action: Optional[str] = None,
-    nargs: Optional[int] = None,
-    const: Optional[str] = None,
-    default: Optional[Any] = None,
-    type: Union[  # pylint: disable=redefined-builtin
-        str, argparse.FileType, None
-    ] = None,
-    choices: Optional[Iterable[Any]] = None,
-    required: Optional[bool] = None,
-    help: Optional[str] = None,  # pylint: disable=redefined-builtin
-    metavar: Union[str, Tuple[str, ...], None] = None,
-    dest: Optional[str] = None,
-    # version: Optional[str] = None,  # pylint: disable=unused-argument  # not implemented
-) -> Dict[str, Any]:
+    *name_or_flags: str | None,
+    flag: str | None = None,
+    action: str | None = None,
+    nargs: int | str | None = None,
+    const: str | None = None,
+    default: Any = None,
+    type: str
+    | argparse.FileType
+    | type
+    | None = None,  # pylint: disable=redefined-builtin
+    choices: Iterable[Any] | None = None,
+    required: bool | None = None,
+    help: str | None = None,  # pylint: disable=redefined-builtin
+    metavar: str | tuple[str, ...] | None = None,
+    dest: str | None = None,
+    # version: str | None = None,  # pylint: disable=unused-argument  # not implemented
+) -> dict[str, Any]:
     """create dict with args for argparse.add_argument"""
     # if not name_or_flags:
     #     name_or_flags = None
@@ -108,11 +109,11 @@ def add_argument_metadata(
 
 def filter_metadata(
     metadata: Mapping[str, Any],
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     return {key: val for key, val in metadata.items() if key in ARG_KEYWORDS}
 
 
-def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
+def process_flags(kwargs: dict[str, Any], prefix: str = "-") -> dict[str, Any]:
     """Process flags.
     Remove `name_or_flags`, add `flags` if need."""
     flag = kwargs.pop("flag", None)
@@ -135,7 +136,7 @@ def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
 
         else:  # if two item - flag is useless
             if flag is not None:
-                print(f"Warning: got `flag` arg {flag} but args: {name_or_flags} given")
+                print(f"Warning: got `flag` {flag} but args: {name_or_flags} given")
             kwargs["flags"] = name_or_flags
     else:
         if flag is not None:
@@ -143,45 +144,56 @@ def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
     return kwargs
 
 
-def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+def validate_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
     """validate kwargs"""
     action = kwargs.get("action", None)
-    if action in ("store_true", "store_false"):
+    # if action in ("store_true", "store_false", "store_const"):
+    if action:
         kwargs.pop("type", None)
-        kwargs.pop("default", None)
+        if action not in ("count", "store_const"):
+            kwargs.pop("default", None)
     return kwargs
 
 
 def kwargs_add_dc_flag(
-    kwargs: Dict[str, Any],
+    kwargs: dict[str, Any],
     name: str,
     prefix: str = "-",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """add flag from dataclass to kwargs"""
-    # positional = False
+    short_flag = long_flag = None
+    dc_flag = f"{prefix*2}{name}"
     flags = kwargs.pop("flags", None)
     if flags is None:
         if kwargs.get("dest", None):  # positional
-            # positional = True
             if kwargs["dest"] != name:
-                print(f"Warning: {kwargs['dest']} but dc name is {name}")
+                print(f"Warning: arg `dest` {kwargs['dest']} but dc name is {name}")
+                kwargs["dest"] = name
         else:
-            kwargs["flags"] = (f"{prefix*2}{name}",)
+            kwargs["flags"] = (dc_flag,)
+        return kwargs
     elif len(flags) == 1:
-        kwargs["flags"] = (*flags, f"{prefix*2}{name}")
+        if len(flags[0]) == 2:
+            short_flag = flags[0]
+            long_flag = None
+        else:
+            short_flag = None
+            long_flag = flags[0]
     else:
-        if flags[1] != f"{prefix*2}{name}":
-            print(f"Warning: {flags[1]} but dc name is {name}")
-        kwargs["flags"] = (flags[0], f"{prefix*2}{name}")
+        short_flag, long_flag = flags
+
+    if long_flag and long_flag != dc_flag:
+        print(f"Warning: got `flag` {long_flag} but dc name is {name}")
+    kwargs["flags"] = (short_flag, dc_flag) if short_flag else (dc_flag,)
     return kwargs
 
 
 def kwargs_add_dc_data(
-    kwargs: Dict[str, Any],
+    kwargs: dict[str, Any],
     name: str,
     arg_type: Type[Any],
     default: Any,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """add data from dataclass to kwargs"""
     # dest = kwargs.get("dest", None)
     # check and set type
@@ -192,10 +204,10 @@ def kwargs_add_dc_data(
                 f"Warning: arg {name} type is {arg_type}, but at metadata {metadata_type}"
             )
     kwargs["type"] = arg_type
-    metadata_default = kwargs.get("default", None)
+    metadata_default = kwargs.pop("default", None)
     if metadata_default is not None and default is None:
         print(f"Warning: arg {name} default={metadata_default} but dc default is None")
-    if default is not None:
+    elif default is not None:
         if metadata_default is not None and metadata_default != default:
             print(
                 f"Warning: arg {name} default={default}, but at metadata={metadata_default}"
@@ -239,7 +251,7 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: Type[Any]) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
-def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> object:
+def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
         print(f"Error: {type(dc)} not dataclass type")
@@ -250,7 +262,7 @@ def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> object:
     return dc(**kwargs)
 
 
-def parse_args(cfg: Type[Any], parser_cfg: Optional[ArgumentParserCfg] = None) -> Any:
+def parse_args(cfg: Type[Any], parser_cfg: ArgumentParserCfg | None = None) -> Any:
     """parse args"""
     parser = create_parser(parser_cfg)
     add_args_from_dc(parser, cfg)
@@ -264,23 +276,24 @@ def field_argument(
     default_factory: Any = MISSING,
     init: bool = True,
     repr: bool = True,  # pylint: disable=redefined-builtin
-    hash: Optional[bool] = None,  # pylint: disable=redefined-builtin
+    hash: bool | None = None,  # pylint: disable=redefined-builtin
     compare: bool = True,
-    metadata: Optional[Mapping[Any, Any]] = None,
+    metadata: Mapping[Any, Any] | None = None,
     kw_only: bool = MISSING,  # type: ignore
-    flag: Optional[str] = None,
-    action: Optional[str] = None,
-    nargs: Optional[int] = None,
-    const: Optional[str] = None,
-    type: Union[  # pylint: disable=redefined-builtin
-        str, argparse.FileType, None
-    ] = None,
-    choices: Optional[Iterable[Any]] = None,
-    required: Optional[bool] = None,
-    help: Optional[str] = None,  # pylint: disable=redefined-builtin
-    metavar: Optional[str] = None,
-    dest: Optional[str] = None,
-    version: Optional[str] = None,  # pylint: disable=unused-argument
+    flag: str | None = None,
+    action: str | None = None,
+    nargs: int | str | None = None,
+    const: Any = None,
+    type: str
+    | argparse.FileType
+    | type
+    | None = None,  # pylint: disable=redefined-builtin
+    choices: Iterable[Any] | None = None,
+    required: bool | None = None,
+    help: str | None = None,  # pylint: disable=redefined-builtin
+    metavar: str | None = None,
+    dest: str | None = None,
+    version: str | None = None,  # pylint: disable=unused-argument
 ) -> Any:
     """Return an object to identify dataclass fields with arguments for argparse.
     Wrapper over dataclasses.field.

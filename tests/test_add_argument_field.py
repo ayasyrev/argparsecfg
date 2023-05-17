@@ -71,18 +71,18 @@ def test_parser():
 @dataclass
 class ArgFlag:
     arg_1: int = field_argument(default=1, metadata=add_argument_metadata("-a"))
-    # arg_2: int = field_argument(default=1, metadata=add_argument_metadata("b"))
-    # arg_3: int = field_argument(default=1, metadata={"flag": "-c"})
-    # arg_4: int = field_argument(default=1, metadata={"flag": "d"})
+    arg_2: int = field_argument(default=1, metadata=add_argument_metadata(flag="b"))
+    arg_3: int = field_argument(default=1, metadata={"flag": "-c"})
+    arg_4: int = field_argument(default=1, metadata={"flag": "d"})
 
 
 def test_add_flag():
     "test dc w flags"
     parser_base = argparse.ArgumentParser()
     parser_base.add_argument("-a", "--arg_1", type=int, default=1)
-    # parser_base.add_argument("-b", "--arg_2", type=int, default=1)
-    # parser_base.add_argument("-c", "--arg_3", type=int, default=1)
-    # parser_base.add_argument("-d", "--arg_4", type=int, default=1)
+    parser_base.add_argument("-b", "--arg_2", type=int, default=1)
+    parser_base.add_argument("-c", "--arg_3", type=int, default=1)
+    parser_base.add_argument("-d", "--arg_4", type=int, default=1)
 
     parser = create_parser()
     add_args_from_dc(parser, ArgFlag)
@@ -150,3 +150,30 @@ def test_arg_positional():
     add_args_from_dc(parser, ArgPositional)
     assert not parsers_equal(parser_base, parser)
     assert parsers_equal_typed(parser_base, parser)
+
+
+def test_action_store_const():
+    """test action store_const"""
+    parser_base = argparse.ArgumentParser()
+    # as example at python docs
+    parser_base.add_argument(
+        "--sum",
+        action="store_const",
+        const=sum,
+    )
+    parser_base.add_argument("--verbose", action="store_true")
+
+    @dataclass
+    class ArgStoreConst:
+        sum: int = field_argument(
+            "--sum",
+            action="store_const",
+            const=sum,
+        )
+        verbose: bool = field_argument(
+            action="store_true",
+        )
+
+    parser = create_parser()
+    add_args_from_dc(parser, ArgStoreConst)
+    assert parsers_args_equal(parser_base, parser)
