@@ -149,7 +149,7 @@ def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     # if action in ("store_true", "store_false", "store_const"):
     if action:
         kwargs.pop("type", None)
-        if action not in ("count"):
+        if action not in ("count", "store_const"):
             kwargs.pop("default", None)
     return kwargs
 
