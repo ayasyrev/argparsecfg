@@ -165,6 +165,7 @@ def kwargs_add_dc_flag(
         if kwargs.get("dest", None):  # positional
             if kwargs["dest"] != name:
                 print(f"Warning: arg `dest` {kwargs['dest']} but dc name is {name}")
+                kwargs["dest"] = name
         else:
             kwargs["flags"] = (dc_flag,)
         return kwargs
