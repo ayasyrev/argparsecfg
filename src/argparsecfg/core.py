@@ -146,9 +146,11 @@ def process_flags(kwargs: Dict[str, Any], prefix: str = "-") -> Dict[str, Any]:
 def validate_kwargs(kwargs: Dict[str, Any]) -> Dict[str, Any]:
     """validate kwargs"""
     action = kwargs.get("action", None)
-    if action in ("store_true", "store_false"):
+    # if action in ("store_true", "store_false", "store_const"):
+    if action:
         kwargs.pop("type", None)
-        kwargs.pop("default", None)
+        if action not in ("count"):
+            kwargs.pop("default", None)
     return kwargs
 
 
