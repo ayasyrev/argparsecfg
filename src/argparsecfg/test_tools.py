@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import argparse
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
 def parsers_args_equal(
@@ -31,7 +33,7 @@ def actions_equal(action1: argparse.Action, action2: argparse.Action) -> bool:
 
 def actions_diff(
     action1: argparse.Action, action2: argparse.Action
-) -> Dict[str, Tuple[Any, Any]]:
+) -> dict[str, tuple[Any, Any]]:
     """Compare actions at two parsers"""
     if actions_same(action1, action2):
         return {
@@ -64,11 +66,11 @@ def parsers_actions_equal(
 def parsers_actions_diff(
     parser_1: argparse.ArgumentParser,
     parser_2: argparse.ArgumentParser,
-) -> List[Dict[str, Tuple[Any, Any]]]:
+) -> list[dict[str, tuple[Any, Any]]]:
     """Compare actions at two parsers"""
     actions_1 = parser_1._actions  # pylint: disable=protected-access
     actions_2 = parser_2._actions  # pylint: disable=protected-access
-    res: List[Dict[str, Tuple[Any, Any]]] = []
+    res: list[dict[str, tuple[Any, Any]]] = []
     for act_1, act_2 in zip(actions_1, actions_2):
         if not actions_same(act_1, act_2):
             res.append({"action_type": (type(act_1), type(act_2))})
