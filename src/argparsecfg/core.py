@@ -75,7 +75,10 @@ def add_argument_metadata(
     nargs: int | str | None = None,
     const: str | None = None,
     default: Any = None,
-    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
+    type: str
+    | argparse.FileType
+    | type
+    | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
@@ -281,7 +284,10 @@ def field_argument(
     action: str | None = None,
     nargs: int | str | None = None,
     const: Any = None,
-    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
+    type: str
+    | argparse.FileType
+    | type
+    | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
