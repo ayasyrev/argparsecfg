@@ -173,6 +173,7 @@ def test_action_store_const():
         verbose: bool = field_argument(
             action="store_true",
         )
+
     parser = create_parser()
     add_args_from_dc(parser, ArgStoreConst)
     assert parsers_args_equal(parser_base, parser)
