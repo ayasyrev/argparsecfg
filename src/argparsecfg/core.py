@@ -158,21 +158,29 @@ def kwargs_add_dc_flag(
     prefix: str = "-",
 ) -> dict[str, Any]:
     """add flag from dataclass to kwargs"""
-    # positional = False
+    short_flag = long_flag = None
+    dc_flag = f"{prefix*2}{name}"
     flags = kwargs.pop("flags", None)
     if flags is None:
         if kwargs.get("dest", None):  # positional
-            # positional = True
             if kwargs["dest"] != name:
                 print(f"Warning: {kwargs['dest']} but dc name is {name}")
         else:
-            kwargs["flags"] = (f"{prefix*2}{name}",)
+            kwargs["flags"] = (dc_flag,)
+        return kwargs
     elif len(flags) == 1:
-        kwargs["flags"] = (*flags, f"{prefix*2}{name}")
+        if len(flags[0]) == 2:
+            short_flag = flags[0]
+            long_flag = None
+        else:
+            short_flag = None
+            long_flag = flags[0]
     else:
-        if flags[1] != f"{prefix*2}{name}":
-            print(f"Warning: {flags[1]} but dc name is {name}")
-        kwargs["flags"] = (flags[0], f"{prefix*2}{name}")
+        short_flag, long_flag = flags
+
+    if long_flag and long_flag != dc_flag:
+        print(f"Warning: {long_flag} but dc name is {name}")
+    kwargs["flags"] = (short_flag, dc_flag) if short_flag else (dc_flag, )
     return kwargs
 
 
