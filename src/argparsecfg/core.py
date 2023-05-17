@@ -164,7 +164,7 @@ def kwargs_add_dc_flag(
     if flags is None:
         if kwargs.get("dest", None):  # positional
             if kwargs["dest"] != name:
-                print(f"Warning: {kwargs['dest']} but dc name is {name}")
+                print(f"Warning: arg `dest` {kwargs['dest']} but dc name is {name}")
         else:
             kwargs["flags"] = (dc_flag,)
         return kwargs
@@ -179,7 +179,7 @@ def kwargs_add_dc_flag(
         short_flag, long_flag = flags
 
     if long_flag and long_flag != dc_flag:
-        print(f"Warning: {long_flag} but dc name is {name}")
+        print(f"Warning: got `flag` {long_flag} but dc name is {name}")
     kwargs["flags"] = (short_flag, dc_flag) if short_flag else (dc_flag, )
     return kwargs
 
