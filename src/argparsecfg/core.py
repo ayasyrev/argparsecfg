@@ -133,7 +133,7 @@ def process_flags(kwargs: dict[str, Any], prefix: str = "-") -> dict[str, Any]:
 
         else:  # if two item - flag is useless
             if flag is not None:
-                print(f"Warning: got `flag` arg {flag} but args: {name_or_flags} given")
+                print(f"Warning: got `flag` {flag} but args: {name_or_flags} given")
             kwargs["flags"] = name_or_flags
     else:
         if flag is not None:
