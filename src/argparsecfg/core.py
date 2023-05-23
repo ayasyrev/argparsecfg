@@ -5,7 +5,7 @@ import dataclasses
 import sys
 from argparse import HelpFormatter
 from dataclasses import MISSING, Field, asdict, dataclass, field
-from typing import Any, Iterable, Mapping, Type
+from typing import Any, Iterable, Mapping, Sequence, Type
 
 _MISSING_TYPE = type(MISSING)
 ARG_KEYWORDS = (
@@ -256,6 +256,17 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: Type[Any]) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
+def extract_flags(dc: type[Any], prefix: str = "-",):
+    flag_name: dict[str, str] = {}
+    for name, fld in dc.__dataclass_fields__.items():
+        flag = fld.metadata.get("flag", None)
+        if flag is not None:
+            flag = flag.lstrip(prefix)
+            if len(flag) > 1:
+                flag_name[flag] = name
+    return flag_name
+
+
 def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
@@ -264,15 +275,24 @@ def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     kwargs = {
         key: val for key, val in args.__dict__.items() if key in dc.__dataclass_fields__
     }
+    flag_name = extract_flags(dc)  # ??prefix
+    if flag_name:
+        kwargs.update(
+            {flag_name[key]: val for key, val in args.__dict__.items() if key in flag_name}
+        )
     return dc(**kwargs)
 
 
-def parse_args(cfg: Type[Any], parser_cfg: ArgumentParserCfg | None = None) -> Any:
+def parse_args(
+        cfg: Type[Any],
+        parser_cfg: ArgumentParserCfg | None = None,
+        args: Sequence[str] | None = None,
+) -> Any:
     """parse args"""
     parser = create_parser(parser_cfg)
     add_args_from_dc(parser, cfg)
-    args = parser.parse_args()
-    return create_dc_obj(cfg, args)
+    parsed_args = parser.parse_args(args=args)
+    return create_dc_obj(cfg, parsed_args)
 
 
 def field_argument(
