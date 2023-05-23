@@ -5,7 +5,7 @@ import dataclasses
 import sys
 from argparse import HelpFormatter
 from dataclasses import MISSING, Field, asdict, dataclass, field
-from typing import Any, Iterable, Mapping, Type
+from typing import Any, Iterable, Mapping, Sequence, Type
 
 _MISSING_TYPE = type(MISSING)
 ARG_KEYWORDS = (
@@ -75,10 +75,7 @@ def add_argument_metadata(
     nargs: int | str | None = None,
     const: str | None = None,
     default: Any = None,
-    type: str
-    | argparse.FileType
-    | type
-    | None = None,  # pylint: disable=redefined-builtin
+    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
@@ -118,8 +115,12 @@ def process_flags(kwargs: dict[str, Any], prefix: str = "-") -> dict[str, Any]:
     Remove `name_or_flags`, add `flags` if need."""
     flag = kwargs.pop("flag", None)
     if flag is not None:
-        if not flag.startswith(prefix):
+        flag = flag.lstrip(prefix)
+        if len(flag) == 1:
             flag = f"{prefix}{flag}"
+        else:
+            kwargs["long_flag"] = f"{prefix * 2}{flag}"
+            flag = None
     name_or_flags = kwargs.pop("name_or_flags", None)
 
     if name_or_flags is not None:
@@ -161,7 +162,9 @@ def kwargs_add_dc_flag(
     prefix: str = "-",
 ) -> dict[str, Any]:
     """add flag from dataclass to kwargs"""
-    short_flag = long_flag = None
+    short_flag = None
+    long_flag = None
+    kwargs_long_flag = kwargs.pop("long_flag", None)
     dc_flag = f"{prefix*2}{name}"
     flags = kwargs.pop("flags", None)
     if flags is None:
@@ -170,7 +173,7 @@ def kwargs_add_dc_flag(
                 print(f"Warning: arg `dest` {kwargs['dest']} but dc name is {name}")
                 kwargs["dest"] = name
         else:
-            kwargs["flags"] = (dc_flag,)
+            kwargs["flags"] = (kwargs_long_flag or dc_flag,)
         return kwargs
     elif len(flags) == 1:
         if len(flags[0]) == 2:
@@ -184,6 +187,8 @@ def kwargs_add_dc_flag(
 
     if long_flag and long_flag != dc_flag:
         print(f"Warning: got `flag` {long_flag} but dc name is {name}")
+    if kwargs_long_flag is not None:
+        dc_flag = kwargs_long_flag
     kwargs["flags"] = (short_flag, dc_flag) if short_flag else (dc_flag,)
     return kwargs
 
@@ -251,6 +256,17 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: Type[Any]) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
+def extract_flags(dc: type[Any], prefix: str = "-",):
+    flag_name: dict[str, str] = {}
+    for name, fld in dc.__dataclass_fields__.items():
+        flag = fld.metadata.get("flag", None)
+        if flag is not None:
+            flag = flag.lstrip(prefix)
+            if len(flag) > 1:
+                flag_name[flag] = name
+    return flag_name
+
+
 def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     """create dataclass instance from argparse cfg"""
     if not dataclasses.is_dataclass(dc):
@@ -259,15 +275,24 @@ def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     kwargs = {
         key: val for key, val in args.__dict__.items() if key in dc.__dataclass_fields__
     }
+    flag_name = extract_flags(dc)  # ??prefix
+    if flag_name:
+        kwargs.update(
+            {flag_name[key]: val for key, val in args.__dict__.items() if key in flag_name}
+        )
     return dc(**kwargs)
 
 
-def parse_args(cfg: Type[Any], parser_cfg: ArgumentParserCfg | None = None) -> Any:
+def parse_args(
+        cfg: Type[Any],
+        parser_cfg: ArgumentParserCfg | None = None,
+        args: Sequence[str] | None = None,
+) -> Any:
     """parse args"""
     parser = create_parser(parser_cfg)
     add_args_from_dc(parser, cfg)
-    args = parser.parse_args()
-    return create_dc_obj(cfg, args)
+    parsed_args = parser.parse_args(args=args)
+    return create_dc_obj(cfg, parsed_args)
 
 
 def field_argument(
@@ -284,10 +309,7 @@ def field_argument(
     action: str | None = None,
     nargs: int | str | None = None,
     const: Any = None,
-    type: str
-    | argparse.FileType
-    | type
-    | None = None,  # pylint: disable=redefined-builtin
+    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
