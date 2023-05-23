@@ -6,6 +6,7 @@ from _pytest.capture import CaptureFixture
 from argparsecfg.core import (
     add_args_from_dc,
     add_argument_metadata,
+    create_dc_obj,
     create_parser,
     field_argument,
 )
@@ -72,6 +73,9 @@ def test_flag_4_long_flag(capsys: CaptureFixture[str]):
     captured = capsys.readouterr()
     out = captured.out
     assert out == ""
+    args = parser.parse_args(["--a1", "1"])
+    cfg = create_dc_obj(ArgFlag, args)
+    assert cfg.arg_1 == 1
 
 
 def test_wrong_dest(capsys: CaptureFixture[str]):
