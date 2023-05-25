@@ -4,7 +4,7 @@ import argparse
 from argparse import HelpFormatter, ArgumentParser
 from dataclasses import is_dataclass
 from functools import wraps
-from inspect import signature
+from inspect import getdoc, signature
 from typing import Any, Callable, Optional, Sequence, Type
 
 from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc,
@@ -65,6 +65,11 @@ def app(
 
 
 class App:
+    subparsers: argparse.Action | None = None
+    main_func: Callable[[Type[Any]], None]
+    commands: dict[str, Callable[[Type[Any]], None]]
+    configs: dict[str, Type[Any]]
+ 
     def __init__(
         self,
         parser_cfg: ArgumentParserCfg | None = None,
@@ -107,6 +112,7 @@ class App:
         app_cfg = params[0]
         add_args_from_dc(self.parser, app_cfg)
         self.main_func = func
+        self.main_cfg = app_cfg
 
         @wraps(func)
         def parse_and_run(args: Optional[Sequence[str]] = None) -> None:
@@ -116,6 +122,42 @@ class App:
         self.parse_and_run = parse_and_run
         return parse_and_run
 
+    def command(self, func: Callable[[Type[Any]], None]):
+        command_name = func.__name__
+        if self.subparsers is None:
+            self.subparsers = self.parser.add_subparsers(
+                title="Commands", help="Available commands."
+            )
+            self.commands = {}
+            self.configs = {}
+        self.commands[command_name] = func
+        help = getdoc(func)
+        if help is not None:
+            help = help.split("Args")[0].strip()
+        command_parser = self.subparsers.add_parser(
+            command_name,
+            help=help,
+            description=help,
+        )
+        command_parser.set_defaults(command=command_name)
+
+        sig = signature(func)
+        params = [param.annotation for param in sig.parameters.values() if is_dataclass(param.annotation)]
+        app_cfg = params[0]
+        self.configs[command_name] = app_cfg
+
+        add_args_from_dc(command_parser, app_cfg)
+
     def __call__(self, args: Optional[Sequence[str]] = None) -> None:
         # self.main_func(args)
-        self.parse_and_run(args)
+        # self.parse_and_run(args)
+        parsed_args = self.parser.parse_args(args)
+        if hasattr(parsed_args, 'command'):
+            cfg = create_dc_obj(
+                self.configs[parsed_args.command],
+                parsed_args
+            )
+            self.commands[parsed_args.command](cfg)
+        else:
+            cfg = create_dc_obj(self.main_cfg, parsed_args)
+            self.main_func(cfg)
