@@ -7,25 +7,29 @@ from functools import wraps
 from inspect import getdoc, signature
 from typing import Any, Callable, Optional, Sequence, Type
 
-from argparsecfg.core import (ArgumentParserCfg, add_args_from_dc,
-                              create_dc_obj, create_parser)
+from argparsecfg.core import (
+    ArgumentParserCfg,
+    add_args_from_dc,
+    create_dc_obj,
+    create_parser,
+)
 
 
 def app(
-        parser_cfg: ArgumentParserCfg | None = None,
-        prog: str | None = None,
-        usage: str | None = None,
-        description: str | None = None,
-        epilog: str | None = None,
-        parents: Sequence[ArgumentParser] = [], # type: ignore  - as at argparse
-        formatter_class: Type[HelpFormatter] = HelpFormatter,
-        prefix_chars: str = "-",
-        fromfile_prefix_chars: str | None = None,
-        argument_default: str | None = None,
-        conflict_handler: str = 'error',
-        add_help: bool = True,
-        allow_abbrev: bool = True,
-        exit_on_error: bool = True,
+    parser_cfg: ArgumentParserCfg | None = None,
+    prog: str | None = None,
+    usage: str | None = None,
+    description: str | None = None,
+    epilog: str | None = None,
+    parents: Sequence[ArgumentParser] = [],  # type: ignore  - as at argparse
+    formatter_class: Type[HelpFormatter] = HelpFormatter,
+    prefix_chars: str = "-",
+    fromfile_prefix_chars: str | None = None,
+    argument_default: str | None = None,
+    conflict_handler: str = "error",
+    add_help: bool = True,
+    allow_abbrev: bool = True,
+    exit_on_error: bool = True,
 ):
     if parser_cfg is None:
         parser_cfg = ArgumentParserCfg(
@@ -49,7 +53,11 @@ def app(
 
     def create_app(func: Callable[[Type[Any]], None]):
         sig = signature(func)
-        params = [param.annotation for param in sig.parameters.values() if is_dataclass(param.annotation)]
+        params = [
+            param.annotation
+            for param in sig.parameters.values()
+            if is_dataclass(param.annotation)
+        ]
         app_cfg = params[0]
 
         @wraps(func)
@@ -59,6 +67,7 @@ def app(
             parsed_args = parser.parse_args(args)
             cfg = create_dc_obj(app_cfg, parsed_args)
             func(cfg)
+
         return parse_and_run
 
     return create_app
@@ -69,7 +78,7 @@ class App:
     main_func: Callable[[Type[Any]], None]
     commands: dict[str, Callable[[Type[Any]], None]]
     configs: dict[str, Type[Any]]
- 
+
     def __init__(
         self,
         parser_cfg: ArgumentParserCfg | None = None,
@@ -77,12 +86,12 @@ class App:
         usage: str | None = None,
         description: str | None = None,
         epilog: str | None = None,
-        parents: Sequence[ArgumentParser] = [], # type: ignore  - as at argparse
+        parents: Sequence[ArgumentParser] = [],  # type: ignore  - as at argparse
         formatter_class: Type[HelpFormatter] = HelpFormatter,
         prefix_chars: str = "-",
         fromfile_prefix_chars: str | None = None,
         argument_default: str | None = None,
-        conflict_handler: str = 'error',
+        conflict_handler: str = "error",
         add_help: bool = True,
         allow_abbrev: bool = True,
         exit_on_error: bool = True,
@@ -108,7 +117,11 @@ class App:
 
     def main(self, func: Callable[[Type[Any]], None]):
         sig = signature(func)
-        params = [param.annotation for param in sig.parameters.values() if is_dataclass(param.annotation)]
+        params = [
+            param.annotation
+            for param in sig.parameters.values()
+            if is_dataclass(param.annotation)
+        ]
         app_cfg = params[0]
         add_args_from_dc(self.parser, app_cfg)
         self.main_func = func
@@ -119,6 +132,7 @@ class App:
             parsed_args = self.parser.parse_args(args)
             cfg = create_dc_obj(app_cfg, parsed_args)
             func(cfg)
+
         self.parse_and_run = parse_and_run
         return parse_and_run
 
@@ -142,7 +156,11 @@ class App:
         command_parser.set_defaults(command=command_name)
 
         sig = signature(func)
-        params = [param.annotation for param in sig.parameters.values() if is_dataclass(param.annotation)]
+        params = [
+            param.annotation
+            for param in sig.parameters.values()
+            if is_dataclass(param.annotation)
+        ]
         app_cfg = params[0]
         self.configs[command_name] = app_cfg
 
@@ -152,11 +170,8 @@ class App:
         # self.main_func(args)
         # self.parse_and_run(args)
         parsed_args = self.parser.parse_args(args)
-        if hasattr(parsed_args, 'command'):
-            cfg = create_dc_obj(
-                self.configs[parsed_args.command],
-                parsed_args
-            )
+        if hasattr(parsed_args, "command"):
+            cfg = create_dc_obj(self.configs[parsed_args.command], parsed_args)
             self.commands[parsed_args.command](cfg)
         else:
             cfg = create_dc_obj(self.main_cfg, parsed_args)
