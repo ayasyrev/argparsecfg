@@ -37,10 +37,10 @@ class ArgumentParserCfg:
     usage: str | None = None
     description: str | None = None
     epilog: str | None = None
-    parents: list[str] = field(default_factory=list)
+    parents: Sequence[argparse.ArgumentParser] = field(default_factory=list)
     formatter_class: Type[HelpFormatter] = HelpFormatter
     prefix_chars: str = "-"
-    fromfile_prefix_chars: bool | None = None
+    fromfile_prefix_chars: str | None = None
     argument_default: str | None = None
     conflict_handler: str = "error"
     add_help: bool = True
@@ -75,7 +75,10 @@ def add_argument_metadata(
     nargs: int | str | None = None,
     const: str | None = None,
     default: Any = None,
-    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
+    type: str
+    | argparse.FileType
+    | type
+    | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
@@ -256,7 +259,10 @@ def add_args_from_dc(parser: argparse.ArgumentParser, dc: Type[Any]) -> None:
         print(f"Warning: {type(dc)} not dataclass type")  # ? warning ?
 
 
-def extract_flags(dc: type[Any], prefix: str = "-",):
+def extract_flags(
+    dc: type[Any],
+    prefix: str = "-",
+):
     flag_name: dict[str, str] = {}
     for name, fld in dc.__dataclass_fields__.items():
         flag = fld.metadata.get("flag", None)
@@ -278,15 +284,19 @@ def create_dc_obj(dc: Type[Any], args: argparse.Namespace) -> Any:
     flag_name = extract_flags(dc)  # ??prefix
     if flag_name:
         kwargs.update(
-            {flag_name[key]: val for key, val in args.__dict__.items() if key in flag_name}
+            {
+                flag_name[key]: val
+                for key, val in args.__dict__.items()
+                if key in flag_name
+            }
         )
     return dc(**kwargs)
 
 
 def parse_args(
-        cfg: Type[Any],
-        parser_cfg: ArgumentParserCfg | None = None,
-        args: Sequence[str] | None = None,
+    cfg: Type[Any],
+    parser_cfg: ArgumentParserCfg | None = None,
+    args: Sequence[str] | None = None,
 ) -> Any:
     """parse args"""
     parser = create_parser(parser_cfg)
@@ -309,7 +319,10 @@ def field_argument(
     action: str | None = None,
     nargs: int | str | None = None,
     const: Any = None,
-    type: str | argparse.FileType | type | None = None,  # pylint: disable=redefined-builtin
+    type: str
+    | argparse.FileType
+    | type
+    | None = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
