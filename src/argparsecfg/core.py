@@ -40,7 +40,7 @@ class ArgumentParserCfg:
     parents: list[str] = field(default_factory=list)
     formatter_class: Type[HelpFormatter] = HelpFormatter
     prefix_chars: str = "-"
-    fromfile_prefix_chars: bool | None = None
+    fromfile_prefix_chars: str | None = None
     argument_default: str | None = None
     conflict_handler: str = "error"
     add_help: bool = True
