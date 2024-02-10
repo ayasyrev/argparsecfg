@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from argparse import HelpFormatter, ArgumentParser
+from argparse import ArgumentParser, HelpFormatter
 from dataclasses import is_dataclass
 from functools import wraps
 from inspect import getdoc, signature
