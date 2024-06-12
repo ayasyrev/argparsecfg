@@ -18,7 +18,9 @@ parser.add_argument("square", help="display a square of a given number", type=in
 @dataclass
 class AppCfg:
     square: int = add_argument(
-        "square", help="display a square of a given number", type=int  # type: ignore
+        "square",
+        help="display a square of a given number",
+        type=int,  # type: ignore
     )
 
 
