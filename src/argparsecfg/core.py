@@ -75,10 +75,9 @@ def add_argument_metadata(
     nargs: int | str | None = None,
     const: str | None = None,
     default: Any = None,
-    type: str
-    | argparse.FileType
-    | type
-    | None = None,  # pylint: disable=redefined-builtin
+    type: (
+        str | argparse.FileType | type | None
+    ) = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin
@@ -168,7 +167,7 @@ def kwargs_add_dc_flag(
     short_flag = None
     long_flag = None
     kwargs_long_flag = kwargs.pop("long_flag", None)
-    dc_flag = f"{prefix*2}{name}"
+    dc_flag = f"{prefix * 2}{name}"
     flags = kwargs.pop("flags", None)
     if flags is None:
         if kwargs.get("dest", None):  # positional
@@ -319,10 +318,9 @@ def field_argument(
     action: str | None = None,
     nargs: int | str | None = None,
     const: Any = None,
-    type: str
-    | argparse.FileType
-    | type
-    | None = None,  # pylint: disable=redefined-builtin
+    type: (
+        str | argparse.FileType | type | None
+    ) = None,  # pylint: disable=redefined-builtin
     choices: Iterable[Any] | None = None,
     required: bool | None = None,
     help: str | None = None,  # pylint: disable=redefined-builtin

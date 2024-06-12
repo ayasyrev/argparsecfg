@@ -1,0 +1,2 @@
+nox
+coverage[toml]
