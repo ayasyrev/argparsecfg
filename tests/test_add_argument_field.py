@@ -101,7 +101,8 @@ def test_add_flag():
 @dataclass
 class ArgTypeDef:
     arg_1: int = field_argument(
-        default=1, metadata=add_argument_metadata(type=float)  # type: ignore - for check error
+        default=1,
+        metadata=add_argument_metadata(type=float),  # type: ignore - for check error
     )
     arg_2: int = field_argument(default=1, metadata=add_argument_metadata(default=2.0))
     arg_3: int = field_argument(default=1, metadata=add_argument_metadata(default=1.0))
