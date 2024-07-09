@@ -226,11 +226,10 @@ def kwargs_add_dc_data(
 
 def add_arg(parser: argparse.ArgumentParser, dc_field: Field[Any]) -> None:
     """add argument to parser from dataclass field"""
+    kwargs: dict[str, Any] = {}
     if dc_field.metadata:
         kwargs = filter_metadata(dc_field.metadata)
         kwargs = process_flags(kwargs, parser.prefix_chars)
-    else:
-        kwargs: dict[str, Any] = {}
     # validate and set kwargs
     # data from dataclass - flag / name, type, default
     field_type = get_field_type(dc_field)
