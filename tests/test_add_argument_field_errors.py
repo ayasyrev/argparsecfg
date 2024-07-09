@@ -141,7 +141,7 @@ def test_metadata_wrong_type(capsys: CaptureFixture[str]):
     parser = create_parser()
     add_args_from_dc(parser, ArgFlag)
     assert parser._actions[1].default == 1
-    assert parser._actions[1].type == int
+    assert parser._actions[1].type is int
     captured = capsys.readouterr()
     out = captured.out
     assert "arg arg_1 type is <class 'int'>, but at metadata float" in out
