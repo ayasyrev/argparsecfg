@@ -5,7 +5,7 @@ import nox
 def cov_tests(session: nox.Session) -> None:
     args = session.posargs or ["--cov"]
     session.install("uv")
-    session.run("uv", "pip", "install", ".[tests]")
+    session.run("uv", "pip", "install", ".[test]", "coverage[toml]")
     session.run("pytest", *args)
 
 

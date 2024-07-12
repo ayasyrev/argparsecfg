@@ -8,4 +8,4 @@ locations = "."
 def lint(session: nox.Session) -> None:
     args = session.posargs or locations
     session.install("ruff")
-    session.run("ruff", "check", ".", *args)
+    session.run("ruff", "check", *args)
