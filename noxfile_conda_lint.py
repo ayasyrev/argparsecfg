@@ -7,4 +7,4 @@ locations = "."
 def conda_lint(session: nox.Session) -> None:
     args = session.posargs or locations
     session.conda_install("ruff")
-    session.run("ruff", "check", ".", *args)
+    session.run("ruff", "check", *args)
