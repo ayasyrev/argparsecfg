@@ -1,9 +1,8 @@
 import nox
 
 
-@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12"], venv_backend="uv")
+@nox.session(python=["3.10", "3.11", "3.12", "3.13", "3.14"], venv_backend="uv")
 def tests(session: nox.Session) -> None:
     args = session.posargs or ["--cov"]
-    session.install("-r", "requirements_test.txt")
-    session.install("-e .")
+    session.run("uv", "pip", "install", "--group", "test", "-e", ".")
     session.run("pytest", *args)
