@@ -5,6 +5,12 @@ tmp*/
 __pycache__/
 *.py[cod]
 *$py.class
+Prj
+
+
+# agents
+AGENTS.md
+
 
 # C extensions
 *.so
