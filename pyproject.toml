@@ -19,7 +19,7 @@ classifiers = [
   "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
 ]
-version = "0.2.5_dev"
+version = "0.2.5b1"
 dependencies = []
 
 [project.urls]

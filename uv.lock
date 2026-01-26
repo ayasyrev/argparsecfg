@@ -20,7 +20,7 @@ wheels = [
 
 [[package]]
 name = "argparsecfg"
-version = "0.2.5.dev0"
+version = "0.2.5b1"
 source = { editable = "." }
 
 [package.dev-dependencies]
