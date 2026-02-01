@@ -7,7 +7,7 @@ from .core import (
     field_argument,
     parse_args,
 )
-
+from .version import __version__
 
 __all__ = [
     "ArgumentParserCfg",
@@ -17,4 +17,5 @@ __all__ = [
     "create_parser",
     "field_argument",
     "parse_args",
+    "__version__",
 ]
