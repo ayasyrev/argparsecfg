@@ -11,63 +11,65 @@ if sys.version_info < (3, 11):
     )
 
 import tomllib
+from importlib.metadata import PackageNotFoundError, version
 
 
-def _get_version() -> str:
+def _get_version_from_metadata() -> str | None:
+    """Try to get version from importlib.metadata."""
+    try:
+        return version("argparsecfg")
+    except PackageNotFoundError:
+        return None
+
+
+def _get_version_from_pyproject() -> str:
+    """Fallback: Read version from pyproject.toml by traversing parent directories."""
     current_file = Path(__file__).resolve()
+    current_dir = current_file.parent
 
-    possible_locations = [
-        current_file.parent.parent.parent / "pyproject.toml",
-        current_file.parent.parent.parent.parent / "pyproject.toml",
-    ]
-
-    for pyproject_path in possible_locations:
+    for _ in range(6):
+        pyproject_path = current_dir / "pyproject.toml"
         if pyproject_path.exists():
             try:
                 with open(pyproject_path, "rb") as f:
                     data = tomllib.load(f)
+                version_str = data["project"]["version"]
 
-                version = data["project"]["version"]
-
-                if not isinstance(version, str) or not version.strip():
+                if not isinstance(version_str, str) or not version_str.strip():
                     raise RuntimeError(
-                        f"Invalid version in {pyproject_path}: {version!r}. "
-                        "Version must be a non-empty string."
+                        f"Invalid version in {pyproject_path}: {version_str!r}"
                     )
-
-                return version.strip()
-
+                return version_str.strip()
             except KeyError as exc:
                 available_keys = list(data.get("project", {}).keys())
                 raise KeyError(
                     f"Version key not found in {pyproject_path}. "
-                    f"Expected [project.version], but found: {available_keys}. "
-                    f"Ensure pyproject.toml has [project] section with 'version' key."
+                    f"Expected [project.version], found: {available_keys}"
                 ) from exc
-
             except tomllib.TOMLDecodeError as exc:
                 raise RuntimeError(
                     f"Invalid TOML syntax in {pyproject_path}: {exc}"
                 ) from exc
-
             except Exception as exc:
                 raise RuntimeError(f"Failed to parse {pyproject_path}: {exc}") from exc
+        current_dir = current_dir.parent
 
-    searched_paths = "\n  - ".join(str(p) for p in possible_locations)
-    raise FileNotFoundError(
-        f"pyproject.toml not found. Searched:\n  - {searched_paths}\n\n"
-        f"If running from source, ensure you're in the project root.\n"
-        f"If installed, try reinstalling: pip install --force-reinstall argparsecfg"
-    )
+    raise FileNotFoundError("pyproject.toml not found in parent directories")
+
+
+def _get_version() -> str:
+    """Get version: try metadata first, fallback to pyproject.toml."""
+    metadata_version = _get_version_from_metadata()
+    if metadata_version is not None:
+        return metadata_version
+    return _get_version_from_pyproject()
 
 
 try:
     __version__ = _get_version()
 except Exception as exc:
     warnings.warn(
-        f"Failed to load version from pyproject.toml: {exc}\n"
-        f"Using fallback version '0.0.0.unknown'\n"
-        f"This usually means pyproject.toml is missing or corrupted.",
+        f"Failed to load version: {exc}. Using fallback '0.0.0.unknown'",
         RuntimeWarning,
         stacklevel=2,
     )
