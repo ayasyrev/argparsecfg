@@ -49,7 +49,7 @@ def app(
         )
     # """Create app.
     # Simple variant - expecting function with one argument"""
-    # to add - ags for argparse parser, ...
+    # to add - args for argparse parser, ...
 
     def create_app(func: Callable[[Type[Any]], None]):
         sig = signature(func)

@@ -1,11 +1,11 @@
 import nox
 
 
-locations = "src/argparsecfg", "tests", "noxfile.py"
+locations = "."
 
 
-@nox.session(python=["3.8", "3.9", "3.10", "3.11", "3.12"])
+@nox.session(python=["3.11", "3.12", "3.13", "3.14"], venv_backend="uv")
 def lint(session: nox.Session) -> None:
     args = session.posargs or locations
-    session.install("flake8")
-    session.run("flake8", *args)
+    session.run("uv", "pip", "install", "--group", "dev")
+    session.run("ruff", "check", *args)
